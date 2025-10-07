@@ -1,0 +1,24 @@
+.root {
+    -fx-font-family: 'Segoe UI', Roboto, Arial;
+}
+
+.title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.subtitle {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.error { -fx-text-fill: #d32f2f; }
+.info { -fx-text-fill: #1565c0; }
+
+/* Light theme with blue accents */
+.button { -fx-background-color: #1976d2; -fx-text-fill: white; }
+.button:disabled { -fx-opacity: 0.6; }
+.text-field, .password-field, .combo-box, .text-area { -fx-background-color: #f5f8ff; }
+
+
+

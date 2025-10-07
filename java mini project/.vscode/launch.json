@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-VirtualInternshipApplication<virtual-internship>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.internship.virtualinternship.VirtualInternshipApplication",
+            "projectName": "virtual-internship",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

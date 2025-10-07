@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.internship.client.controller.MentorDashboardController" stylesheets="styles.css">
+    <top>
+        <ToolBar>
+            <items>
+                <Label text="Mentor Dashboard" styleClass="title" />
+                <Pane HBox.hgrow="ALWAYS" />
+                <Button fx:id="refreshButton" text="Refresh" />
+                <Button fx:id="logoutButton" text="Logout" />
+            </items>
+        </ToolBar>
+    </top>
+    <center>
+        <SplitPane>
+            <items>
+                <VBox spacing="8" padding="10">
+                    <children>
+                        <Label text="Select Internship" />
+                        <ComboBox fx:id="internshipCombo" />
+                        <Label text="Tasks" />
+                        <ListView fx:id="tasksList" />
+                    </children>
+                </VBox>
+                <VBox spacing="8" padding="10">
+                    <children>
+                        <Label text="Create Task" styleClass="subtitle" />
+                        <TextField fx:id="taskTitleField" promptText="Title" />
+                        <TextArea fx:id="taskDescArea" promptText="Description" prefRowCount="8" wrapText="true" />
+                        <Button fx:id="createTaskButton" text="Create Task" maxWidth="Infinity" />
+                    </children>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>
+
+
+

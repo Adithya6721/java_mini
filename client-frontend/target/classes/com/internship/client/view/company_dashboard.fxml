@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.internship.client.controller.CompanyDashboardController" stylesheets="styles.css">
+    <top>
+        <ToolBar>
+            <items>
+                <Label text="Company Dashboard" styleClass="title" />
+                <Pane HBox.hgrow="ALWAYS" />
+                <Button fx:id="refreshButton" text="Refresh" />
+                <Button fx:id="logoutButton" text="Logout" />
+            </items>
+        </ToolBar>
+    </top>
+    <center>
+        <SplitPane>
+            <items>
+                <TableView fx:id="internshipsTable">
+                    <columns>
+                        <TableColumn fx:id="colRole" text="Role" prefWidth="160" />
+                        <TableColumn fx:id="colCompany" text="Company" prefWidth="200" />
+                        <TableColumn fx:id="colRequirements" text="Requirements" prefWidth="300" />
+                    </columns>
+                </TableView>
+                <VBox spacing="8" alignment="TOP_LEFT" padding="10">
+                    <children>
+                        <Label text="Post New Internship" styleClass="subtitle" />
+                        <TextField fx:id="roleField" promptText="Role" />
+                        <TextField fx:id="companyField" promptText="Company" />
+                        <TextField fx:id="requirementsField" promptText="Requirements" />
+                        <TextArea fx:id="descriptionArea" promptText="Description" prefRowCount="6" wrapText="true" />
+                        <Button fx:id="postButton" text="Post Internship" maxWidth="Infinity" />
+                    </children>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>
+
+
+
