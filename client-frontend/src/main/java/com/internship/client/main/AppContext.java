@@ -1,6 +1,7 @@
 package com.internship.client.main;
 
 import com.internship.client.service.ApiService;
+import com.internship.client.service.TokenManager;
 
 public final class AppContext {
     private static SceneManager sceneManager;
@@ -20,6 +21,10 @@ public final class AppContext {
 
     public static ApiService api() {
         return ApiService.getInstance();
+    }
+
+    public static TokenManager tokens() {
+        return TokenManager.getInstance();
     }
 }
 

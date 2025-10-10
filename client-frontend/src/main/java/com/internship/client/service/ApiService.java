@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.internship.client.model.*;
+import com.internship.client.main.AppContext;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -21,7 +22,6 @@ public class ApiService {
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private volatile String jwtToken;
     private volatile Role currentUserRole;
 
     private ApiService() {
@@ -40,7 +40,7 @@ public class ApiService {
     }
 
     public Optional<String> getJwtToken() {
-        return Optional.ofNullable(jwtToken);
+        return AppContext.tokens().getToken();
     }
 
     public Optional<Role> getCurrentUserRole() {
@@ -48,7 +48,7 @@ public class ApiService {
     }
 
     public void logout() {
-        this.jwtToken = null;
+        AppContext.tokens().clear();
         this.currentUserRole = null;
     }
 
@@ -56,9 +56,7 @@ public class ApiService {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + path))
                 .timeout(Duration.ofSeconds(20));
-        if (jwtToken != null) {
-            builder.header("Authorization", "Bearer " + jwtToken);
-        }
+        AppContext.tokens().getToken().ifPresent(t -> builder.header("Authorization", "Bearer " + t));
         return builder.header("Content-Type", "application/json");
     }
 
@@ -73,14 +71,17 @@ public class ApiService {
                         if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                             try {
                                 LoginResponse lr = objectMapper.readValue(resp.body(), LoginResponse.class);
-                                this.jwtToken = lr.token();
+                                AppContext.tokens().setToken(lr.token());
                                 this.currentUserRole = lr.role();
                                 return CompletableFuture.completedFuture(lr);
                             } catch (Exception e) {
                                 return CompletableFuture.failedFuture(e);
                             }
                         }
-                        return CompletableFuture.failedFuture(new RuntimeException("Login failed: " + resp.statusCode()));
+                        String message = resp.statusCode() == 401 || resp.statusCode() == 403
+                                ? "Invalid username or password"
+                                : ("Login failed: " + resp.statusCode());
+                        return CompletableFuture.failedFuture(new RuntimeException(message));
                     });
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);

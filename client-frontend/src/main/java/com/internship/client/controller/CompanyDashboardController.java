@@ -20,6 +20,7 @@ public class CompanyDashboardController {
     @FXML private Button postButton;
     @FXML private Button refreshButton;
     @FXML private Button logoutButton;
+    @FXML private ProgressIndicator loadingIndicator;
 
     private final ObservableList<Internship> data = FXCollections.observableArrayList();
 
@@ -37,9 +38,11 @@ public class CompanyDashboardController {
 
     private void loadInternships() {
         refreshButton.setDisable(true);
+        if (loadingIndicator != null) loadingIndicator.setVisible(true);
         AppContext.api().getInternships()
                 .whenComplete((list, ex) -> Platform.runLater(() -> {
                     refreshButton.setDisable(false);
+                    if (loadingIndicator != null) loadingIndicator.setVisible(false);
                     if (ex != null) {
                         new Alert(Alert.AlertType.ERROR, "Failed to load: " + ex.getMessage(), ButtonType.OK).showAndWait();
                         return;

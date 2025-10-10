@@ -13,6 +13,7 @@ public class LoginController {
     @FXML private Button loginButton;
     @FXML private Hyperlink registerLink;
     @FXML private Label errorLabel;
+    @FXML private ProgressIndicator loginSpinner;
 
     @FXML
     public void initialize() {
@@ -26,9 +27,11 @@ public class LoginController {
         String username = usernameField.getText();
         String password = passwordField.getText();
         loginButton.setDisable(true);
+        loginSpinner.setVisible(true);
         AppContext.api().login(new LoginRequest(username, password))
                 .whenComplete((resp, ex) -> Platform.runLater(() -> {
                     loginButton.setDisable(false);
+                    loginSpinner.setVisible(false);
                     if (ex != null) {
                         errorLabel.setText("Login failed: " + ex.getMessage());
                         return;

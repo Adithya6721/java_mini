@@ -1,4 +1,70 @@
 .root {
+    -fx-font-family: "Segoe UI", "Inter", "Arial";
+    -fx-background-color: #f4f4f4;
+    -fx-text-fill: #333333;
+}
+
+.title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+.subtitle {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+.error {
+    -fx-text-fill: #cc0000;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #0078D7;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 8 14 8 14;
+}
+.button:hover {
+    -fx-background-color: #0a86eb;
+}
+.button:pressed {
+    -fx-background-color: #0569b5;
+}
+
+/* Inputs */
+.text-field, .password-field, .text-area {
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-border-color: #dddddd;
+    -fx-border-radius: 4;
+    -fx-padding: 8 10 8 10;
+}
+.text-field:focused, .password-field:focused, .text-area:focused {
+    -fx-border-color: #0078D7;
+}
+
+/* Table */
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 6;
+    -fx-border-color: #e6e6e6;
+    -fx-border-radius: 6;
+}
+.table-view .column-header-background {
+    -fx-background-color: #f0f3f6;
+    -fx-background-radius: 6 6 0 0;
+}
+.table-view .column-header, .table-view .filler {
+    -fx-size: 32px;
+}
+.table-view .table-row-cell:filled:selected {
+    -fx-background-color: #e6f3ff;
+}
+
+.root {
     -fx-font-family: 'Segoe UI', Roboto, Arial;
 }
 

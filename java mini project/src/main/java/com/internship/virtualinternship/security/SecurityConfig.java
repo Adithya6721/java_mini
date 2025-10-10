@@ -2,61 +2,61 @@ package com.internship.virtualinternship.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * Security configuration class for the application.
- * This class sets up the security rules for API endpoints.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * Creates a BCryptPasswordEncoder bean to be used for hashing passwords.
-     * @return A PasswordEncoder instance.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Configures the security filter chain.
-     * This is the central place to define security rules.
-     *
-     * @param http The HttpSecurity object to configure.
-     * @return A SecurityFilterChain instance.
-     * @throws Exception If an error occurs during configuration.
-     */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            // Disable Cross-Site Request Forgery (CSRF) protection,
-            // which is common for stateless REST APIs.
-            .csrf(csrf -> csrf.disable())
+    public UserDetailsService userDetailsService(com.internship.virtualinternship.repository.UserRepository userRepository) {
+        return new CustomUserDetailsService(userRepository);
+    }
 
-            // Configure authorization rules for HTTP requests.
-            .authorizeHttpRequests(auth -> auth
-                // Allow anyone to access the registration endpoint.
-                .requestMatchers("/api/auth/register").permitAll()
-                // Require authentication for any other request.
+    @Bean
+    public JwtUtil jwtUtil() {
+        // For demo, a base64-encoded 256-bit key. In production, externalize to env/config
+        String base64Secret = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm123456==";
+        long expirationMs = 1000L * 60 * 60 * 24; // 24h
+        return new JwtUtil(base64Secret, expirationMs);
+    }
+
+    @Bean
+    public JwtAuthFilter jwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+        return new JwtAuthFilter(jwtUtil, userDetailsService);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated()
             )
-
-            // Configure session management to be stateless.
-            // This means the server won't create or use HTTP sessions,
-            // which is ideal for REST APIs that use tokens for authentication.
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
-
+            .httpBasic(httpBasic -> httpBasic.disable())
+            .formLogin(form -> form.disable())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
-
