@@ -37,14 +37,19 @@ public class LoginController {
                         return;
                     }
                     Role role = resp.role();
-                    if (role == Role.STUDENT) {
-                        AppContext.getSceneManager().switchToStudentDashboard();
-                    } else if (role == Role.COMPANY) {
-                        AppContext.getSceneManager().switchToCompanyDashboard();
-                    } else if (role == Role.MENTOR) {
-                        AppContext.getSceneManager().switchToMentorDashboard();
-                    } else {
-                        errorLabel.setText("Unknown role");
+                    String userRole = role != null ? role.name() : "";
+                    switch (userRole) {
+                        case "STUDENT":
+                            AppContext.getSceneManager().switchToStudentDashboard();
+                            break;
+                        case "COMPANY":
+                            AppContext.getSceneManager().switchToCompanyDashboard();
+                            break;
+                        case "MENTOR":
+                            AppContext.getSceneManager().switchToMentorDashboard();
+                            break;
+                        default:
+                            errorLabel.setText("Invalid role");
                     }
                 }));
     }

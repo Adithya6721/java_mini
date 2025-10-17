@@ -9,6 +9,7 @@
             <items>
                 <Label text="Student Dashboard" styleClass="title" />
                 <Pane HBox.hgrow="ALWAYS" />
+                <TextField fx:id="searchField" promptText="Search internships..." />
                 <Button fx:id="refreshButton" text="Refresh" />
                 <ProgressIndicator fx:id="loadingIndicator" visible="false" prefWidth="18" prefHeight="18" />
                 <Button fx:id="logoutButton" text="Logout" />

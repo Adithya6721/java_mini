@@ -1,17 +1,19 @@
 package com.internship.virtualinternship.repository;
 
 import com.internship.virtualinternship.model.Internship;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/**
- * Spring Data JPA repository for the Internship entity.
- * This interface provides CRUD operations for the Internship model.
- */
+
 @Repository
 public interface InternshipRepository extends JpaRepository<Internship, Long> {
-    // By extending JpaRepository, we get methods like findAll(), findById(), save(), delete()
-    // for the Internship entity without writing any implementation code.
-    // We can add custom query methods here if needed in the future.
+    Page<Internship> findByCompany_Id(Long companyId, Pageable pageable);
+
+    @Query("SELECT i FROM Internship i WHERE LOWER(i.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(i.description) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Internship> searchInternships(@Param("search") String search, Pageable pageable);
 }
 

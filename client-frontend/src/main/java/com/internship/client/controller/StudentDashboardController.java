@@ -15,6 +15,7 @@ public class StudentDashboardController {
     @FXML private TableColumn<Internship, String> colRole;
     @FXML private TableColumn<Internship, String> colCompany;
     @FXML private TableColumn<Internship, String> colRequirements;
+    @FXML private TextField searchField;
     @FXML private TextArea detailsArea;
     @FXML private Button refreshButton;
     @FXML private Button logoutButton;
@@ -24,13 +25,14 @@ public class StudentDashboardController {
 
     @FXML
     public void initialize() {
-        colRole.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().role()));
-        colCompany.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().company()));
-        colRequirements.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().requirements()));
+        colRole.setCellValueFactory(c -> c.getValue().roleProperty());
+        colCompany.setCellValueFactory(c -> c.getValue().companyProperty());
+        colRequirements.setCellValueFactory(c -> c.getValue().requirementsProperty());
         internshipsTable.setItems(data);
         internshipsTable.getSelectionModel().selectedItemProperty().addListener((obs, old, sel) -> showDetails(sel));
         refreshButton.setOnAction(e -> loadInternships());
         logoutButton.setOnAction(e -> { AppContext.api().logout(); AppContext.getSceneManager().switchToLogin(); });
+        if (searchField != null) attachSearch();
         loadInternships();
     }
 
@@ -40,10 +42,10 @@ public class StudentDashboardController {
             return;
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("Role: ").append(i.role()).append('\n');
-        sb.append("Company: ").append(i.company()).append('\n');
-        sb.append("Requirements: ").append(i.requirements()).append('\n');
-        sb.append("Description: ").append(i.description() == null ? "" : i.description());
+        sb.append("Role: ").append(i.getRole()).append('\n');
+        sb.append("Company: ").append(i.getCompany()).append('\n');
+        sb.append("Requirements: ").append(i.getRequirements()).append('\n');
+        sb.append("Description: ").append(i.getDescription() == null ? "" : i.getDescription());
         detailsArea.setText(sb.toString());
     }
 
@@ -60,6 +62,26 @@ public class StudentDashboardController {
                     }
                     data.setAll(list);
                 }));
+    }
+
+    private void attachSearch() {
+        final long[] lastTypeAt = {0};
+        searchField.textProperty().addListener((obs, o, n) -> {
+            lastTypeAt[0] = System.currentTimeMillis();
+            new Thread(() -> {
+                try { Thread.sleep(300); } catch (InterruptedException ignored) {}
+                if (System.currentTimeMillis() - lastTypeAt[0] >= 300) {
+                    String q = n == null ? "" : n.trim().toLowerCase();
+                    Platform.runLater(() -> {
+                        internshipsTable.setItems(data.filtered(i ->
+                                i.getRole().toLowerCase().contains(q) ||
+                                i.getCompany().toLowerCase().contains(q) ||
+                                i.getRequirements().toLowerCase().contains(q)
+                        ));
+                    });
+                }
+            }).start();
+        });
     }
 }
 
