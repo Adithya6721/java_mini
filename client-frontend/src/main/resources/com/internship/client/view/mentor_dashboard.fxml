@@ -1,42 +1,211 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.*?>
+
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.internship.client.controller.MentorDashboardController" stylesheets="styles.css">
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.internship.client.controller.MentorDashboardController">
     <top>
-        <ToolBar>
-            <items>
-                <Label text="Mentor Dashboard" styleClass="title" />
-                <Pane HBox.hgrow="ALWAYS" />
-                <Button fx:id="refreshButton" text="Refresh" />
-                <Button fx:id="logoutButton" text="Logout" />
-            </items>
-        </ToolBar>
-    </top>
-    <center>
-        <SplitPane>
-            <items>
-                <VBox spacing="8" padding="10">
+      <VBox spacing="10.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label styleClass="title" text="Mentor Dashboard" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button fx:id="refreshBtn" onAction="#handleRefresh" styleClass="button-primary" text="Refresh" />
+               </children>
+            </HBox>
+            
+            <!-- Stats Cards -->
+            <GridPane hgap="20.0" vgap="10.0">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card">
+                     <children>
+                        <Label fx:id="assignedStudentsLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Assigned Students" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card" GridPane.columnIndex="1">
+                     <children>
+                        <Label fx:id="pendingTasksLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Pending Tasks" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card" GridPane.columnIndex="2">
                     <children>
-                        <Label text="Select Internship" />
-                        <ComboBox fx:id="internshipCombo" />
-                        <Label text="Tasks" />
-                        <ListView fx:id="tasksList" />
+                        <Label fx:id="completedSubmissionsLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Completed Submissions" />
                     </children>
                 </VBox>
-                <VBox spacing="8" padding="10">
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card" GridPane.columnIndex="3">
                     <children>
-                        <Label text="Create Task" styleClass="subtitle" />
-                        <TextField fx:id="taskTitleField" promptText="Title" />
-                        <TextArea fx:id="taskDescArea" promptText="Description" prefRowCount="8" wrapText="true" />
-                        <Button fx:id="createTaskButton" text="Create Task" maxWidth="Infinity" />
+                        <Label fx:id="avgGradeLabel" styleClass="stats-number" text="0.0" />
+                        <Label styleClass="stats-label" text="Avg Grade" />
                     </children>
                 </VBox>
-            </items>
-        </SplitPane>
-    </center>
+               </children>
+            </GridPane>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </VBox>
+   </top>
+   
+   <center>
+      <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+         <tabs>
+            <!-- My Students Tab -->
+            <Tab text="My Students">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Student Management" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Button fx:id="messageStudentsBtn" onAction="#handleMessageStudents" styleClass="button-primary" text="Message All" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="studentsTable">
+                           <columns>
+                              <TableColumn fx:id="studentNameCol" prefWidth="150.0" text="Student Name" />
+                              <TableColumn fx:id="internshipCol" prefWidth="200.0" text="Internship" />
+                              <TableColumn fx:id="progressCol" prefWidth="100.0" text="Progress" />
+                              <TableColumn fx:id="lastActivityCol" prefWidth="120.0" text="Last Activity" />
+                              <TableColumn fx:id="studentActionsCol" prefWidth="150.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- Tasks Tab -->
+            <Tab text="Tasks">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Task Management" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Button fx:id="createTaskBtn" onAction="#handleCreateTask" styleClass="button-primary" text="Create Task" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="tasksTable">
+                           <columns>
+                              <TableColumn fx:id="taskTitleCol" prefWidth="200.0" text="Title" />
+                              <TableColumn fx:id="assignedToCol" prefWidth="150.0" text="Assigned To" />
+                              <TableColumn fx:id="deadlineCol" prefWidth="120.0" text="Deadline" />
+                              <TableColumn fx:id="taskStatusCol" prefWidth="100.0" text="Status" />
+                              <TableColumn fx:id="taskActionsCol" prefWidth="200.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- Create Task Tab -->
+            <Tab text="Create Task">
+               <content>
+                  <ScrollPane fitToWidth="true">
+                     <content>
+                        <VBox spacing="15.0">
+                           <children>
+                              <Label styleClass="form-title" text="Create New Task" />
+                              
+                              <GridPane hgap="10.0" vgap="10.0">
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label text="Title:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <TextField fx:id="taskTitleField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                    
+                                    <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <TextArea fx:id="taskDescriptionArea" prefRowCount="3" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    
+                                    <Label text="Deadline:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <DatePicker fx:id="taskDeadlinePicker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    
+                                    <Label text="Student:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                    <ComboBox fx:id="studentCombo" promptText="Select Student" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    
+                                    <Label text="Priority:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                    <ComboBox fx:id="priorityCombo" promptText="Select Priority" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                    
+                                    <Label text="Max Score:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                    <TextField fx:id="maxScoreField" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                    
+                                    <Label text="Grading Criteria:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                    <TextArea fx:id="gradingCriteriaArea" prefRowCount="3" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                    
+                                    <Label text="Attachment URLs:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                    <TextField fx:id="attachmentUrlsField" promptText="Comma-separated URLs" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                    
+                                    <Label text="Reference Links:" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                                    <TextField fx:id="referenceLinksField" promptText="Comma-separated links" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                    
+                                    <HBox alignment="CENTER_RIGHT" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                       <children>
+                                          <Button fx:id="clearTaskFormBtn" onAction="#handleClearTaskForm" styleClass="button-secondary" text="Clear" />
+                                          <Button fx:id="submitTaskFormBtn" onAction="#handleSubmitTaskForm" styleClass="button-primary" text="Create Task" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </GridPane>
+                           </children>
+                           <padding>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                           </padding>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </center>
+   
+   <bottom>
+      <HBox alignment="CENTER_RIGHT" spacing="10.0">
+         <children>
+            <Label fx:id="statusLabel" styleClass="status-text" text="Ready" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </HBox>
+   </bottom>
 </BorderPane>
-
-
-

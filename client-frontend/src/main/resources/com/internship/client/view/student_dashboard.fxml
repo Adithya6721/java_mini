@@ -1,36 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.*?>
+
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.internship.client.controller.StudentDashboardController" stylesheets="styles.css">
-    <top>
-        <ToolBar>
-            <items>
-                <Label text="Student Dashboard" styleClass="title" />
-                <Pane HBox.hgrow="ALWAYS" />
-                <TextField fx:id="searchField" promptText="Search internships..." />
-                <Button fx:id="refreshButton" text="Refresh" />
-                <ProgressIndicator fx:id="loadingIndicator" visible="false" prefWidth="18" prefHeight="18" />
-                <Button fx:id="logoutButton" text="Logout" />
-            </items>
-        </ToolBar>
-    </top>
-    <center>
-        <SplitPane>
-            <items>
-                <TableView fx:id="internshipsTable">
-                    <columns>
-                        <TableColumn fx:id="colRole" text="Role" prefWidth="160" />
-                        <TableColumn fx:id="colCompany" text="Company" prefWidth="200" />
-                        <TableColumn fx:id="colRequirements" text="Requirements" prefWidth="300" />
-                    </columns>
-                </TableView>
-                <TextArea fx:id="detailsArea" editable="false" wrapText="true" />
-            </items>
-        </SplitPane>
-    </center>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.internship.client.controller.StudentDashboardController">
+   <top>
+      <VBox spacing="10.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label styleClass="title" text="Student Dashboard" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button fx:id="refreshBtn" onAction="#handleRefresh" styleClass="button-primary" text="Refresh" />
+               </children>
+            </HBox>
+            
+            <!-- Stats Cards -->
+            <GridPane hgap="20.0" vgap="10.0">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card">
+                     <children>
+                        <Label fx:id="applicationsLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Applications" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card" GridPane.columnIndex="1">
+                     <children>
+                        <Label fx:id="acceptedInternshipsLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Accepted Internships" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card" GridPane.columnIndex="2">
+                     <children>
+                        <Label fx:id="tasksPendingLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Tasks Pending" />
+                     </children>
+                  </VBox>
+               </children>
+            </GridPane>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </VBox>
+   </top>
+   
+   <center>
+      <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+         <tabs>
+            <!-- Browse Tab -->
+            <Tab text="Browse">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Available Internships" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <TextField fx:id="searchField" promptText="Search internships..." />
+                              <Button fx:id="searchBtn" onAction="#handleSearch" styleClass="button-secondary" text="Search" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="browseTable">
+                           <columns>
+                              <TableColumn fx:id="companyCol" prefWidth="150.0" text="Company" />
+                              <TableColumn fx:id="browseTitleCol" prefWidth="200.0" text="Title" />
+                              <TableColumn fx:id="durationCol" prefWidth="100.0" text="Duration" />
+                              <TableColumn fx:id="skillsCol" prefWidth="150.0" text="Skills" />
+                              <TableColumn fx:id="browseActionsCol" prefWidth="100.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- My Applications Tab -->
+            <Tab text="My Applications">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Application Status" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <ComboBox fx:id="appStatusFilterCombo" promptText="Filter by Status" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="applicationsTable">
+                           <columns>
+                              <TableColumn fx:id="appCompanyCol" prefWidth="150.0" text="Company" />
+                              <TableColumn fx:id="appPositionCol" prefWidth="200.0" text="Position" />
+                              <TableColumn fx:id="appStatusCol" prefWidth="120.0" text="Status" />
+                              <TableColumn fx:id="appDateCol" prefWidth="120.0" text="Date" />
+                              <TableColumn fx:id="appActionsCol" prefWidth="150.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- My Tasks Tab -->
+            <Tab text="My Tasks">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Task Management" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <ComboBox fx:id="taskStatusFilterCombo" promptText="Filter by Status" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="tasksTable">
+                           <columns>
+                              <TableColumn fx:id="taskTitleCol" prefWidth="200.0" text="Title" />
+                              <TableColumn fx:id="taskDeadlineCol" prefWidth="120.0" text="Deadline" />
+                              <TableColumn fx:id="taskStatusCol" prefWidth="100.0" text="Status" />
+                              <TableColumn fx:id="taskActionsCol" prefWidth="200.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- Submissions Tab -->
+            <Tab text="Submissions">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Submission History" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <ComboBox fx:id="submissionStatusFilterCombo" promptText="Filter by Status" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="submissionsTable">
+                           <columns>
+                              <TableColumn fx:id="submissionTaskCol" prefWidth="200.0" text="Task" />
+                              <TableColumn fx:id="submissionDateCol" prefWidth="120.0" text="Date Submitted" />
+                              <TableColumn fx:id="submissionGradeCol" prefWidth="100.0" text="Grade" />
+                              <TableColumn fx:id="submissionFeedbackCol" prefWidth="200.0" text="Feedback" />
+                           </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </center>
+   
+   <bottom>
+      <HBox alignment="CENTER_RIGHT" spacing="10.0">
+         <children>
+            <Label fx:id="statusLabel" styleClass="status-text" text="Ready" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </HBox>
+   </bottom>
 </BorderPane>
-
-
-

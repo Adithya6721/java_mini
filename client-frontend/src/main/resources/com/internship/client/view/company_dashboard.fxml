@@ -1,44 +1,220 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.*?>
+
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.internship.client.controller.CompanyDashboardController" stylesheets="styles.css">
-    <top>
-        <ToolBar>
-            <items>
-                <Label text="Company Dashboard" styleClass="title" />
-                <Pane HBox.hgrow="ALWAYS" />
-                <Button fx:id="refreshButton" text="Refresh" />
-                <ProgressIndicator fx:id="loadingIndicator" visible="false" prefWidth="18" prefHeight="18" />
-                <Button fx:id="logoutButton" text="Logout" />
-            </items>
-        </ToolBar>
-    </top>
-    <center>
-        <SplitPane>
-            <items>
-                <TableView fx:id="internshipsTable">
-                    <columns>
-                        <TableColumn fx:id="colRole" text="Role" prefWidth="160" />
-                        <TableColumn fx:id="colCompany" text="Company" prefWidth="200" />
-                        <TableColumn fx:id="colRequirements" text="Requirements" prefWidth="300" />
-                    </columns>
-                </TableView>
-                <VBox spacing="8" alignment="TOP_LEFT" padding="10">
-                    <children>
-                        <Label text="Post New Internship" styleClass="subtitle" />
-                        <TextField fx:id="roleField" promptText="Role" />
-                        <TextField fx:id="companyField" promptText="Company" />
-                        <TextField fx:id="requirementsField" promptText="Requirements" />
-                        <TextArea fx:id="descriptionArea" promptText="Description" prefRowCount="6" wrapText="true" />
-                        <Button fx:id="postButton" text="Post Internship" maxWidth="Infinity" />
-                    </children>
-                </VBox>
-            </items>
-        </SplitPane>
-    </center>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.internship.client.controller.CompanyDashboardController">
+   <top>
+      <VBox spacing="10.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label styleClass="title" text="Company Dashboard" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button fx:id="refreshBtn" onAction="#handleRefresh" styleClass="button-primary" text="Refresh" />
+                  <Button fx:id="exportBtn" onAction="#handleExport" styleClass="button-secondary" text="Export" />
+               </children>
+            </HBox>
+            
+            <!-- Stats Cards -->
+            <GridPane hgap="20.0" vgap="10.0">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card">
+                     <children>
+                        <Label fx:id="activeInternshipsLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Active Internships" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card" GridPane.columnIndex="1">
+                     <children>
+                        <Label fx:id="totalApplicationsLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Total Applications" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card" GridPane.columnIndex="2">
+                     <children>
+                        <Label fx:id="pendingReviewsLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Pending Reviews" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0" styleClass="stats-card" GridPane.columnIndex="3">
+                     <children>
+                        <Label fx:id="activeTasksLabel" styleClass="stats-number" text="0" />
+                        <Label styleClass="stats-label" text="Active Tasks" />
+                     </children>
+                  </VBox>
+               </children>
+            </GridPane>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </VBox>
+   </top>
+   
+   <center>
+      <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+         <tabs>
+            <!-- My Internships Tab -->
+            <Tab text="My Internships">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Internship Management" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Button fx:id="createInternshipBtn" onAction="#handleCreateInternship" styleClass="button-primary" text="Create New" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="internshipsTable">
+                           <columns>
+                              <TableColumn fx:id="titleCol" prefWidth="200.0" text="Title" />
+                              <TableColumn fx:id="statusCol" prefWidth="120.0" text="Status" />
+                              <TableColumn fx:id="applicationsCol" prefWidth="100.0" text="Applications" />
+                              <TableColumn fx:id="startDateCol" prefWidth="120.0" text="Start Date" />
+                              <TableColumn fx:id="actionsCol" prefWidth="200.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- Applications Tab -->
+            <Tab text="Applications">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Application Management" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <ComboBox fx:id="statusFilterCombo" promptText="Filter by Status" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="applicationsTable">
+                           <columns>
+                              <TableColumn fx:id="studentCol" prefWidth="150.0" text="Student" />
+                              <TableColumn fx:id="internshipCol" prefWidth="200.0" text="Internship" />
+                              <TableColumn fx:id="appStatusCol" prefWidth="120.0" text="Status" />
+                              <TableColumn fx:id="appDateCol" prefWidth="120.0" text="Date" />
+                              <TableColumn fx:id="appActionsCol" prefWidth="150.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- Create New Tab -->
+            <Tab text="Create New">
+               <content>
+                  <ScrollPane fitToWidth="true">
+                     <content>
+                        <VBox spacing="15.0">
+                           <children>
+                              <Label styleClass="form-title" text="Create New Internship" />
+                              
+                              <GridPane hgap="10.0" vgap="10.0">
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label text="Title:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <TextField fx:id="titleField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                    
+                                    <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <TextArea fx:id="descriptionArea" prefRowCount="3" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    
+                                    <Label text="Duration:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <TextField fx:id="durationField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    
+                                    <Label text="Requirements:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                    <TextArea fx:id="requirementsArea" prefRowCount="3" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    
+                                    <Label text="Skills:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                    <TextField fx:id="skillsField" promptText="Comma-separated skills" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                    
+                                    <Label text="Deadline:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                    <DatePicker fx:id="deadlinePicker" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                    
+                                    <Label text="Stipend:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                    <TextField fx:id="stipendField" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                    
+                                    <Label text="Location:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                    <TextField fx:id="locationField" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                    
+                                    <Label text="Openings:" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                                    <TextField fx:id="openingsField" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                    
+                                    <Label text="Responsibilities:" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                                    <TextArea fx:id="responsibilitiesArea" prefRowCount="3" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                                    
+                                    <Label text="Perks:" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                                    <TextField fx:id="perksField" promptText="Comma-separated perks" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                                    
+                                    <HBox alignment="CENTER_RIGHT" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="11">
+                                       <children>
+                                          <Button fx:id="clearFormBtn" onAction="#handleClearForm" styleClass="button-secondary" text="Clear" />
+                                          <Button fx:id="submitFormBtn" onAction="#handleSubmitForm" styleClass="button-primary" text="Create Internship" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </GridPane>
+                           </children>
+                           <padding>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                           </padding>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </center>
+   
+   <bottom>
+      <HBox alignment="CENTER_RIGHT" spacing="10.0">
+         <children>
+            <Label fx:id="statusLabel" styleClass="status-text" text="Ready" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </HBox>
+   </bottom>
 </BorderPane>
-
-
-
