@@ -2,7 +2,6 @@ package com.internship.client.controller;
 
 import com.internship.client.main.AppContext;
 import com.internship.client.model.Internship;
-import com.internship.client.model.Task;
 import com.internship.client.service.ApiService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -12,12 +11,11 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
-
+import javafx.concurrent.Task;
+import javafx.scene.layout.HBox;
 import java.time.LocalDate;
 import java.util.List;
 
-// Add at top:
-import javafx.scene.layout.HBox;
 public class CompanyDashboardController {
     
     // Stats Labels
@@ -68,6 +66,7 @@ public class CompanyDashboardController {
     // Other Controls
     @FXML private ComboBox<String> statusFilterCombo;
     @FXML private Label statusLabel;
+    @FXML private ProgressIndicator loadingIndicator;
 
     private final ObservableList<Internship> internshipsData = FXCollections.observableArrayList();
     private final ObservableList<Object> applicationsData = FXCollections.observableArrayList();
@@ -153,15 +152,13 @@ public class CompanyDashboardController {
     }
     
     private void loadStats() {
-        // Load statistics from API
         apiService.getInternships()
                 .whenComplete((internships, ex) -> Platform.runLater(() -> {
                     if (ex == null) {
                         activeInternshipsLabel.setText(String.valueOf(internships.size()));
-                        // Calculate other stats
-                        totalApplicationsLabel.setText("0"); // TODO: Calculate from applications
-                        pendingReviewsLabel.setText("0"); // TODO: Calculate from applications
-                        activeTasksLabel.setText("0"); // TODO: Calculate from tasks
+                        totalApplicationsLabel.setText("0"); // TODO
+                        pendingReviewsLabel.setText("0"); // TODO
+                        activeTasksLabel.setText("0"); // TODO
                     }
                 }));
     }
@@ -172,19 +169,34 @@ public class CompanyDashboardController {
     }
     
     private void loadInternships() {
-        apiService.getInternships()
-                .whenComplete((internships, ex) -> Platform.runLater(() -> {
-                    if (ex == null) {
-                        internshipsData.setAll(internships);
-                    } else {
-                        showError("Failed to load internships: " + ex.getMessage());
-                    }
-                }));
+        if (loadingIndicator != null) loadingIndicator.setVisible(true);
+        if (refreshBtn != null) refreshBtn.setDisable(true);
+        Task<List<Internship>> task = new Task<>() {
+            @Override
+            protected List<Internship> call() throws Exception {
+                return apiService.getCompanyInternships().join();
+            }
+        };
+        task.setOnSucceeded(_ -> {
+            if (loadingIndicator != null) loadingIndicator.setVisible(false);
+            if (refreshBtn != null) refreshBtn.setDisable(false);
+            internshipsData.clear();
+            internshipsData.addAll(task.getValue());
+            if (statusLabel != null) statusLabel.setText("Internships loaded");
+        });
+        task.setOnFailed(_ -> {
+            if (loadingIndicator != null) loadingIndicator.setVisible(false);
+            if (refreshBtn != null) refreshBtn.setDisable(false);
+            Throwable ex = task.getException();
+            ex.printStackTrace();
+            showError("Failed to load internships: " + ex.getMessage());
+        });
+        new Thread(task).start();
     }
     
     private void loadApplications() {
-        // TODO: Load applications from API
         applicationsData.clear();
+        // TODO: Load applications from API
     }
     
     private void setupEventHandlers() {
@@ -204,7 +216,6 @@ public class CompanyDashboardController {
     
     @FXML
     private void handleExport() {
-        // TODO: Implement export functionality
         statusLabel.setText("Export functionality not implemented yet");
     }
     
@@ -230,14 +241,12 @@ public class CompanyDashboardController {
     
     @FXML
     private void handleSubmitForm() {
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
         
         Internship newInternship = new Internship(
             null,
             titleField.getText(),
-            "Company Name", // Company name
+            "Company Name",
             requirementsArea.getText(),
             descriptionArea.getText()
         );
@@ -249,7 +258,7 @@ public class CompanyDashboardController {
                     if (ex == null) {
                         internshipsData.add(0, created);
                         handleClearForm();
-                        mainTabPane.getSelectionModel().select(0); // Switch to My Internships tab
+                        mainTabPane.getSelectionModel().select(0);
                         statusLabel.setText("Internship created successfully");
                         showSuccess("Internship created successfully");
                     } else {
@@ -259,33 +268,21 @@ public class CompanyDashboardController {
     }
     
     private boolean validateForm() {
-        if (titleField.getText().trim().isEmpty()) {
-            showError("Title is required");
-            return false;
-        }
-        if (descriptionArea.getText().trim().isEmpty()) {
-            showError("Description is required");
-            return false;
-        }
-        if (requirementsArea.getText().trim().isEmpty()) {
-            showError("Requirements are required");
-            return false;
-        }
-        if (deadlinePicker.getValue() == null) {
-            showError("Deadline is required");
-            return false;
-        }
+        if (titleField.getText().trim().isEmpty()) { showError("Title is required"); return false; }
+        if (descriptionArea.getText().trim().isEmpty()) { showError("Description is required"); return false; }
+        if (requirementsArea.getText().trim().isEmpty()) { showError("Requirements are required"); return false; }
+        if (deadlinePicker.getValue() == null) { showError("Deadline is required"); return false; }
         return true;
     }
     
     private void handleViewInternship(Internship internship) {
-        // TODO: Show internship details dialog
         statusLabel.setText("Viewing internship: " + internship.getTitle());
+        // TODO: Show internship details
     }
     
     private void handleEditInternship(Internship internship) {
-        // TODO: Open edit dialog or switch to edit mode
         statusLabel.setText("Editing internship: " + internship.getTitle());
+        // TODO: Open edit dialog
     }
     
     private void handleDeleteInternship(Internship internship) {
@@ -296,7 +293,6 @@ public class CompanyDashboardController {
         
         confirmDialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // TODO: Implement delete functionality
                 internshipsData.remove(internship);
                 statusLabel.setText("Internship deleted");
             }
@@ -304,8 +300,8 @@ public class CompanyDashboardController {
     }
     
     private void handleReviewApplication(Object application) {
-        // TODO: Open application review dialog
         statusLabel.setText("Reviewing application");
+        // TODO: Open review dialog
     }
     
     private void showError(String message) {
@@ -324,6 +320,3 @@ public class CompanyDashboardController {
         alert.showAndWait();
     }
 }
-
-
-

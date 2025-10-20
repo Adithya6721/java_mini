@@ -124,6 +124,42 @@ public class ApiService {
                 });
     }
 
+    public CompletableFuture<List<Internship>> getCompanyInternships() {
+        HttpRequest request = baseBuilder("/api/company/my-internships")
+                .GET()
+                .build();
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenCompose(resp -> {
+                    if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                        try {
+                            List<Internship> list = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            return CompletableFuture.completedFuture(list);
+                        } catch (Exception e) {
+                            return CompletableFuture.failedFuture(e);
+                        }
+                    }
+                    return CompletableFuture.failedFuture(new RuntimeException("Failed to fetch company internships: " + resp.statusCode()));
+                });
+    }
+
+    public CompletableFuture<List<Internship>> getMentorInternships() {
+        HttpRequest request = baseBuilder("/api/mentor/internships")
+                .GET()
+                .build();
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenCompose(resp -> {
+                    if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                        try {
+                            List<Internship> list = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            return CompletableFuture.completedFuture(list);
+                        } catch (Exception e) {
+                            return CompletableFuture.failedFuture(e);
+                        }
+                    }
+                    return CompletableFuture.failedFuture(new RuntimeException("Failed to fetch mentor internships: " + resp.statusCode()));
+                });
+    }
+
     public CompletableFuture<Internship> postInternship(Internship internship) {
         try {
             String body = objectMapper.writeValueAsString(internship);
