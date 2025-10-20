@@ -182,7 +182,7 @@ public class MentorDashboardController {
                 .whenComplete((internships, ex) -> Platform.runLater(() -> {
                     if (ex == null && !internships.isEmpty()) {
                         // Load tasks for the first internship
-                        apiService.getTasksByInternshipId(internships.get(0).id())
+                        apiService.getTasksByInternshipId(internships.get(0).getId())
                                 .whenComplete((tasks, taskEx) -> Platform.runLater(() -> {
                                     if (taskEx == null) {
                                         tasksData.setAll(tasks);
@@ -294,12 +294,12 @@ public class MentorDashboardController {
     
     private void handleGradeTask(Task task) {
         // TODO: Open grading dialog
-        statusLabel.setText("Grading task: " + task.title());
+        statusLabel.setText("Grading task: " + task.getTitle());
     }
     
     private void handleEditTask(Task task) {
         // TODO: Open edit dialog
-        statusLabel.setText("Editing task: " + task.title());
+        statusLabel.setText("Editing task: " + task.getTitle());
     }
     
     private void showError(String message) {

@@ -237,7 +237,7 @@ public class CompanyDashboardController {
         Internship newInternship = new Internship(
             null,
             titleField.getText(),
-            AppContext.getCurrentUser().getUsername(), // Company name
+            "Company Name", // Company name
             requirementsArea.getText(),
             descriptionArea.getText()
         );
@@ -280,12 +280,12 @@ public class CompanyDashboardController {
     
     private void handleViewInternship(Internship internship) {
         // TODO: Show internship details dialog
-        statusLabel.setText("Viewing internship: " + internship.title());
+        statusLabel.setText("Viewing internship: " + internship.getRole());
     }
     
     private void handleEditInternship(Internship internship) {
         // TODO: Open edit dialog or switch to edit mode
-        statusLabel.setText("Editing internship: " + internship.title());
+        statusLabel.setText("Editing internship: " + internship.getRole());
     }
     
     private void handleDeleteInternship(Internship internship) {

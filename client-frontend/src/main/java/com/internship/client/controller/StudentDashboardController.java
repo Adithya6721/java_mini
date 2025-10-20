@@ -269,9 +269,9 @@ public class StudentDashboardController {
             browseTable.setItems(browseData);
         } else {
             browseTable.setItems(browseData.filtered(internship ->
-                internship.title().toLowerCase().contains(query) ||
-                internship.company().toLowerCase().contains(query) ||
-                internship.requirements().toLowerCase().contains(query)
+                internship.getRole().toLowerCase().contains(query) ||
+                internship.getCompany().toLowerCase().contains(query) ||
+                internship.getRequirements().toLowerCase().contains(query)
             ));
         }
         statusLabel.setText("Search completed");
@@ -292,7 +292,7 @@ public class StudentDashboardController {
     
     private void handleApply(Internship internship) {
         // TODO: Open application dialog
-        statusLabel.setText("Applying to: " + internship.title());
+        statusLabel.setText("Applying to: " + internship.getRole());
         showSuccess("Application submitted successfully");
     }
     
@@ -313,12 +313,12 @@ public class StudentDashboardController {
     
     private void handleSubmitTask(Task task) {
         // TODO: Open submission dialog
-        statusLabel.setText("Submitting task: " + task.title());
+        statusLabel.setText("Submitting task: " + task.getTitle());
     }
     
     private void handleViewTask(Task task) {
         // TODO: Open task details dialog
-        statusLabel.setText("Viewing task: " + task.title());
+        statusLabel.setText("Viewing task: " + task.getTitle());
     }
     
     private void showError(String message) {

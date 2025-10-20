@@ -7,7 +7,7 @@ import javafx.beans.property.ObjectProperty;
 
 public class Internship {
     private final ObjectProperty<Long> id = new SimpleObjectProperty<>();
-    private final StringProperty role = new SimpleStringProperty("");
+    private final StringProperty title = new SimpleStringProperty("");
     private final StringProperty company = new SimpleStringProperty("");
     private final StringProperty requirements = new SimpleStringProperty("");
     private final StringProperty description = new SimpleStringProperty("");
@@ -26,9 +26,9 @@ public class Internship {
     public Long getId() { return id.get(); }
     public void setId(Long value) { this.id.set(value); }
 
-    public StringProperty roleProperty() { return role; }
-    public String getRole() { return role.get(); }
-    public void setRole(String value) { this.role.set(value); }
+    public StringProperty titleProperty() { return title; }
+    public String getTitle() { return title.get(); }
+    public void setTitle(String value) { this.title.set(value); }
 
     public StringProperty companyProperty() { return company; }
     public String getCompany() { return company.get(); }

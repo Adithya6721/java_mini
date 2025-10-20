@@ -24,8 +24,8 @@ public class Notification {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
-    @Column(nullable = false)
-    private boolean isRead = false;
+    @Column(name = "is_read")
+    private boolean isRead;    
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
@@ -40,7 +40,7 @@ public class Notification {
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
     public boolean isRead() { return isRead; }
-    public void setIsRead(boolean isRead) { this.isRead = isRead; }
+    public void setRead(boolean isRead) { this.isRead = isRead; }
     public Date getTimestamp() { return timestamp; }
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 }
