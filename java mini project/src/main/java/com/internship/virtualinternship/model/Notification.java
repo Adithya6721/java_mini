@@ -25,7 +25,7 @@ public class Notification {
     private String message;
 
     @Column(nullable = false)
-    private boolean read = false;
+    private boolean isRead = false;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
@@ -39,8 +39,8 @@ public class Notification {
     public void setType(Type type) { this.type = type; }
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
-    public boolean isRead() { return read; }
-    public void setRead(boolean read) { this.read = read; }
+    public boolean isRead() { return isRead; }
+    public void setIsRead(boolean isRead) { this.isRead = isRead; }
     public Date getTimestamp() { return timestamp; }
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 }

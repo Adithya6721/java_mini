@@ -1,3 +1,4 @@
+
 package com.internship.virtualinternship.model;
 
 import jakarta.persistence.*;

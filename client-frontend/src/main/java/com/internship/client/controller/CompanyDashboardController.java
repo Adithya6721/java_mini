@@ -16,6 +16,8 @@ import javafx.util.Callback;
 import java.time.LocalDate;
 import java.util.List;
 
+// Add at top:
+import javafx.scene.layout.HBox;
 public class CompanyDashboardController {
     
     // Stats Labels

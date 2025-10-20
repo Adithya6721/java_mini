@@ -1,10 +1,12 @@
 package com.internship.client.main;
 
+import com.internship.client.model.User;
 import com.internship.client.service.ApiService;
 import com.internship.client.service.TokenManager;
 
 public final class AppContext {
     private static SceneManager sceneManager;
+    private static User currentUser;
 
     private AppContext() {}
 
@@ -25,6 +27,14 @@ public final class AppContext {
 
     public static TokenManager tokens() {
         return TokenManager.getInstance();
+    }
+
+    public static User getCurrentUser() {
+        return currentUser;
+    }
+
+    public static void setCurrentUser(User user) {
+        currentUser = user;
     }
 }
 
