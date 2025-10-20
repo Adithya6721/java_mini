@@ -17,7 +17,7 @@ public class Submission {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "submission_date", nullable = false)
-    private Date submissionDate;
+    private Date submissionDate = new Date();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
@@ -26,6 +26,13 @@ public class Submission {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
+
+    // Added missing fields
+    private Integer score;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String feedback;
 
     // --- Getters and Setters ---
 
@@ -68,5 +75,20 @@ public class Submission {
     public void setStudent(User student) {
         this.student = student;
     }
-}
 
+    public Integer getScore() {
+        return score;
+    }
+
+    public void setScore(Integer score) {
+        this.score = score;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
+    }
+}

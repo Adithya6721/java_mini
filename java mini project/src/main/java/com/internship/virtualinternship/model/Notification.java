@@ -40,7 +40,7 @@ public class Notification {
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
     public boolean isRead() { return isRead; }
-    public void setRead(boolean isRead) { this.isRead = isRead; }
+    public void setRead(boolean read) { this.isRead = read; }
     public Date getTimestamp() { return timestamp; }
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 }

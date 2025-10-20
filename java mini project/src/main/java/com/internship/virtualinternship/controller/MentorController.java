@@ -100,7 +100,11 @@ public class MentorController {
     public ResponseEntity<?> gradeSubmission(@PathVariable Long id, @Valid @RequestBody GradeRequestDto dto) {
         try {
             Submission submission = submissionService.findById(id);
-            submission.setContent((submission.getContent() == null ? "" : submission.getContent()) + "\n\n[Feedback] " + dto.getFeedback());
+            // Set the score and feedback properly
+            submission.setScore(dto.getScore());
+            submission.setFeedback(dto.getFeedback());
+            
+            // Update the submission
             Submission updated = submissionService.update(id, convertToSubmissionRequestDto(submission));
             SubmissionResponseDto response = convertToResponseDto(updated);
             return ResponseEntity.ok(response);
@@ -139,5 +143,3 @@ public class MentorController {
         return dto;
     }
 }
-
-

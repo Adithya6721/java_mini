@@ -29,7 +29,7 @@ public class NotificationService {
 
     public List<Notification> getUnread(Long userId) {
         User user = userRepository.findById(userId).orElseThrow();
-        return notificationRepository.findByUserAndIsReadIsFalse(user);
+        return notificationRepository.findByUserAndIsReadFalse(user);
     }
 
     public long getUnreadCount(Long userId) {
@@ -38,14 +38,14 @@ public class NotificationService {
 
     public Notification markAsRead(Long id) {
         Notification n = notificationRepository.findById(id).orElseThrow();
-        n.setIsRead(true);
+        n.setRead(true);
         return notificationRepository.save(n);
     }
 
     public void markAllAsRead(Long userId) {
         List<Notification> list = getUnread(userId);
         for (Notification n : list) {
-            n.setIsRead(true);
+            n.setRead(true);
         }
         notificationRepository.saveAll(list);
     }

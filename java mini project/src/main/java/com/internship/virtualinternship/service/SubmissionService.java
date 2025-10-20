@@ -9,6 +9,7 @@ import com.internship.virtualinternship.repository.TaskRepository;
 import com.internship.virtualinternship.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -33,6 +34,7 @@ public class SubmissionService {
         submission.setStudent(student);
         submission.setTask(task);
         submission.setContent(dto.getContent());
+        submission.setSubmissionDate(new Date());
         
         return submissionRepository.save(submission);
     }
@@ -63,6 +65,11 @@ public class SubmissionService {
         existing.setContent(dto.getContent());
         
         return submissionRepository.save(existing);
+    }
+
+    // Method to update a submission directly (used for grading)
+    public Submission updateSubmission(Submission submission) {
+        return submissionRepository.save(submission);
     }
 
     public void delete(Long id) {

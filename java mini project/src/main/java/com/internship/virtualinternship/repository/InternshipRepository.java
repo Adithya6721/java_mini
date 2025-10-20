@@ -13,7 +13,9 @@ import org.springframework.stereotype.Repository;
 public interface InternshipRepository extends JpaRepository<Internship, Long> {
     Page<Internship> findByCompany_Id(Long companyId, Pageable pageable);
 
+    // This is the correct line
     @Query("SELECT i FROM Internship i WHERE LOWER(i.title) LIKE CONCAT('%', LOWER(:search), '%') OR LOWER(i.description) LIKE CONCAT('%', LOWER(:search), '%')")
+
     Page<Internship> searchInternships(@Param("search") String search, Pageable pageable);
 }
 
