@@ -269,7 +269,7 @@ public class StudentDashboardController {
             browseTable.setItems(browseData);
         } else {
             browseTable.setItems(browseData.filtered(internship ->
-                internship.getRole().toLowerCase().contains(query) ||
+                internship.getTitle().toLowerCase().contains(query) ||
                 internship.getCompany().toLowerCase().contains(query) ||
                 internship.getRequirements().toLowerCase().contains(query)
             ));
@@ -292,7 +292,7 @@ public class StudentDashboardController {
     
     private void handleApply(Internship internship) {
         // TODO: Open application dialog
-        statusLabel.setText("Applying to: " + internship.getRole());
+        statusLabel.setText("Applying to: " + internship.getTitle());
         showSuccess("Application submitted successfully");
     }
     

@@ -280,12 +280,12 @@ public class CompanyDashboardController {
     
     private void handleViewInternship(Internship internship) {
         // TODO: Show internship details dialog
-        statusLabel.setText("Viewing internship: " + internship.getRole());
+        statusLabel.setText("Viewing internship: " + internship.getTitle());
     }
     
     private void handleEditInternship(Internship internship) {
         // TODO: Open edit dialog or switch to edit mode
-        statusLabel.setText("Editing internship: " + internship.getRole());
+        statusLabel.setText("Editing internship: " + internship.getTitle());
     }
     
     private void handleDeleteInternship(Internship internship) {

@@ -14,9 +14,9 @@ public class Internship {
 
     public Internship() {}
 
-    public Internship(Long id, String role, String company, String requirements, String description) {
+    public Internship(Long id, String title, String company, String requirements, String description) {
         setId(id);
-        setRole(role);
+        setTitle(title);
         setCompany(company);
         setRequirements(requirements);
         setDescription(description);
