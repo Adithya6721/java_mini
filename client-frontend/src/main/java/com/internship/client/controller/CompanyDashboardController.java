@@ -62,6 +62,7 @@ public class CompanyDashboardController {
     @FXML private Button createInternshipBtn;
     @FXML private Button clearFormBtn;
     @FXML private Button submitFormBtn;
+    @FXML private Button logoutBtn;
     
     // Other Controls
     @FXML private ComboBox<String> statusFilterCombo;
@@ -205,6 +206,7 @@ public class CompanyDashboardController {
         createInternshipBtn.setOnAction(e -> handleCreateInternship());
         clearFormBtn.setOnAction(e -> handleClearForm());
         submitFormBtn.setOnAction(e -> handleSubmitForm());
+        logoutBtn.setOnAction(e -> handleLogout());
     }
     
     @FXML
@@ -312,6 +314,21 @@ public class CompanyDashboardController {
         alert.showAndWait();
     }
     
+    @FXML
+    private void handleLogout() {
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Confirm Logout");
+        confirmDialog.setHeaderText("Logout");
+        confirmDialog.setContentText("Are you sure you want to logout?");
+        
+        confirmDialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                AppContext.api().logout();
+                AppContext.getSceneManager().showLogin();
+            }
+        });
+    }
+
     private void showSuccess(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Success");

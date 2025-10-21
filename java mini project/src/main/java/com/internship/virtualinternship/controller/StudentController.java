@@ -14,8 +14,8 @@ import com.internship.virtualinternship.service.InternshipService;
 import com.internship.virtualinternship.service.SubmissionService;
 import com.internship.virtualinternship.service.TaskService;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,6 +67,16 @@ public class StudentController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new ResourceNotFoundException("Failed to fetch internships: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/internships/search")
+    public ResponseEntity<Page<InternshipResponseDto>> searchInternships(@RequestParam String search, Pageable pageable) {
+        try {
+            Page<InternshipResponseDto> response = internshipService.searchInternships(search, pageable);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Failed to search internships: " + e.getMessage());
         }
     }
 

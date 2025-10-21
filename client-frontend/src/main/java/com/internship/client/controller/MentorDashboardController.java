@@ -60,6 +60,7 @@ public class MentorDashboardController {
     @FXML private Button createTaskBtn;
     @FXML private Button clearTaskFormBtn;
     @FXML private Button submitTaskFormBtn;
+    @FXML private Button logoutBtn;
 
     // Other Controls
     @FXML private Label statusLabel;
@@ -238,6 +239,7 @@ public class MentorDashboardController {
         createTaskBtn.setOnAction(e -> handleCreateTask());
         clearTaskFormBtn.setOnAction(e -> handleClearTaskForm());
         submitTaskFormBtn.setOnAction(e -> handleSubmitTaskForm());
+        logoutBtn.setOnAction(e -> handleLogout());
     }
 
     @FXML
@@ -339,6 +341,21 @@ public class MentorDashboardController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void handleLogout() {
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Confirm Logout");
+        confirmDialog.setHeaderText("Logout");
+        confirmDialog.setContentText("Are you sure you want to logout?");
+        
+        confirmDialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                AppContext.api().logout();
+                AppContext.getSceneManager().showLogin();
+            }
+        });
     }
 
     private void showSuccess(String message) {

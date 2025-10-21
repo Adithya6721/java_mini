@@ -86,6 +86,11 @@ public class InternshipService {
                 .collect(Collectors.toList());
     }
 
+    public Page<InternshipResponseDto> searchInternships(String searchTerm, Pageable pageable) {
+        Page<Internship> internships = internshipRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(searchTerm, searchTerm, pageable);
+        return internships.map(this::convertToResponseDto);
+    }
+
     private InternshipResponseDto convertToResponseDto(Internship internship) {
         InternshipResponseDto dto = new InternshipResponseDto();
         dto.setId(internship.getId());

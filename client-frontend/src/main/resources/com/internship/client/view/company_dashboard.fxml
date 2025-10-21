@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.internship.client.controller.CompanyDashboardController">
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.internship.client.controller.CompanyDashboardController" stylesheets="@styles.css">
    <top>
       <VBox spacing="10.0">
          <children>
@@ -16,6 +16,7 @@
                   <Button fx:id="refreshBtn" onAction="#handleRefresh" styleClass="button-primary" text="Refresh" />
                   <ProgressIndicator fx:id="loadingIndicator" prefWidth="24.0" prefHeight="24.0" visible="false" />
                   <Button fx:id="exportBtn" onAction="#handleExport" styleClass="button-secondary" text="Export" />
+                  <Button fx:id="logoutBtn" onAction="#handleLogout" styleClass="button-secondary" text="Logout" />
                </children>
             </HBox>
             

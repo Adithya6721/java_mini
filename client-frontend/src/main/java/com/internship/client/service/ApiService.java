@@ -107,7 +107,7 @@ public class ApiService {
     }
 
     public CompletableFuture<List<Internship>> getInternships() {
-        HttpRequest request = baseBuilder("/api/internships")
+        HttpRequest request = baseBuilder("/api/student/internships/available")
                 .GET()
                 .build();
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
@@ -125,7 +125,7 @@ public class ApiService {
     }
 
     public CompletableFuture<List<Internship>> getCompanyInternships() {
-        HttpRequest request = baseBuilder("/api/company/my-internships")
+        HttpRequest request = baseBuilder("/api/company/internships?companyId=1")
                 .GET()
                 .build();
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
@@ -143,7 +143,7 @@ public class ApiService {
     }
 
     public CompletableFuture<List<Internship>> getMentorInternships() {
-        HttpRequest request = baseBuilder("/api/mentor/internships")
+        HttpRequest request = baseBuilder("/api/student/internships/available")
                 .GET()
                 .build();
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())

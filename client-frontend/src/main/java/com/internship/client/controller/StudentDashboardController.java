@@ -65,6 +65,7 @@ public class StudentDashboardController {
 
     // Buttons
     @FXML private Button refreshBtn;
+    @FXML private Button logoutBtn;
 
     // Other Controls
     @FXML private Label statusLabel;
@@ -88,10 +89,10 @@ public class StudentDashboardController {
 
     private void setupColumns() {
         // Browse table columns
-        companyCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Company Name"));
+        companyCol.setCellValueFactory(new PropertyValueFactory<>("company"));
         browseTitleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
         durationCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("3 months"));
-        skillsCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Java, Spring"));
+        skillsCol.setCellValueFactory(new PropertyValueFactory<>("requirements"));
 
         // Browse actions column
         browseActionsCol.setCellFactory(param -> new TableCell<Internship, Void>() {
@@ -221,6 +222,7 @@ public class StudentDashboardController {
     private void setupEventHandlers() {
         refreshBtn.setOnAction(e -> handleRefresh());
         searchBtn.setOnAction(e -> handleSearch());
+        logoutBtn.setOnAction(e -> handleLogout());
     }
 
     @FXML
@@ -290,6 +292,21 @@ public class StudentDashboardController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void handleLogout() {
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Confirm Logout");
+        confirmDialog.setHeaderText("Logout");
+        confirmDialog.setContentText("Are you sure you want to logout?");
+        
+        confirmDialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                AppContext.api().logout();
+                AppContext.getSceneManager().showLogin();
+            }
+        });
     }
 
     private void showSuccess(String message) {
