@@ -2,6 +2,7 @@ package com.internship.client.controller;
 
 import com.internship.client.main.AppContext;
 import com.internship.client.model.Internship;
+import com.internship.client.model.InternshipCreateDTO;
 import com.internship.client.service.ApiService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -245,14 +246,11 @@ public class CompanyDashboardController {
     private void handleSubmitForm() {
         if (!validateForm()) return;
         
-        Internship newInternship = new Internship(
-            null,
-            titleField.getText(),
-            "Company Name",
-            requirementsArea.getText(),
-            descriptionArea.getText()
-        );
-        
+        InternshipCreateDTO newInternship = new InternshipCreateDTO();
+        newInternship.setTitle(titleField.getText());
+        newInternship.setDescription(descriptionArea.getText());
+        newInternship.setRequirements(requirementsArea.getText());
+        newInternship.setDeadline(deadlinePicker.getValue());
         submitFormBtn.setDisable(true);
         apiService.postInternship(newInternship)
                 .whenComplete((created, ex) -> Platform.runLater(() -> {

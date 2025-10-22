@@ -3,6 +3,7 @@ package com.internship.client.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.internship.client.model.*;
 import com.internship.client.main.AppContext;
 
@@ -29,6 +30,7 @@ public class ApiService {
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
         this.objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -70,9 +72,14 @@ public class ApiService {
                     .thenCompose(resp -> {
                         if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                             try {
-                                LoginResponse lr = objectMapper.readValue(resp.body(), LoginResponse.class);
-                                AppContext.tokens().setToken(lr.token());
-                                this.currentUserRole = lr.role();
+                                com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(resp.body());
+                                String token = jsonNode.get("token").asText();
+                                String roleStr = jsonNode.get("role").asText();
+                                Role role = Role.valueOf(roleStr);
+                                
+                                LoginResponse lr = new LoginResponse(token, role);
+                                AppContext.tokens().setToken(token);
+                                this.currentUserRole = role;
                                 return CompletableFuture.completedFuture(lr);
                             } catch (Exception e) {
                                 return CompletableFuture.failedFuture(e);
@@ -99,7 +106,7 @@ public class ApiService {
                         if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                             return CompletableFuture.completedFuture(null);
                         }
-                        return CompletableFuture.failedFuture(new RuntimeException("Registration failed: " + resp.statusCode() + " - " + resp.body()));
+                        return CompletableFuture.failedFuture(new RuntimeException("Registration failed: " + resp.body()));
                     });
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
@@ -114,9 +121,13 @@ public class ApiService {
                 .thenCompose(resp -> {
                     if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                         try {
-                            List<Internship> list = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<InternshipDTO> dtoList = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<Internship> list = dtoList.stream()
+                                    .map(this::convertToInternship)
+                                    .toList();
                             return CompletableFuture.completedFuture(list);
                         } catch (Exception e) {
+                            e.printStackTrace();
                             return CompletableFuture.failedFuture(e);
                         }
                     }
@@ -125,16 +136,20 @@ public class ApiService {
     }
 
     public CompletableFuture<List<Internship>> getCompanyInternships() {
-        HttpRequest request = baseBuilder("/api/company/internships?companyId=1")
+        HttpRequest request = baseBuilder("/api/company/internships?companyId=2")
                 .GET()
                 .build();
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenCompose(resp -> {
                     if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                         try {
-                            List<Internship> list = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<InternshipDTO> dtoList = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<Internship> list = dtoList.stream()
+                                    .map(this::convertToInternship)
+                                    .toList();
                             return CompletableFuture.completedFuture(list);
                         } catch (Exception e) {
+                            e.printStackTrace();
                             return CompletableFuture.failedFuture(e);
                         }
                     }
@@ -150,9 +165,13 @@ public class ApiService {
                 .thenCompose(resp -> {
                     if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                         try {
-                            List<Internship> list = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<InternshipDTO> dtoList = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<Internship> list = dtoList.stream()
+                                    .map(this::convertToInternship)
+                                    .toList();
                             return CompletableFuture.completedFuture(list);
                         } catch (Exception e) {
+                            e.printStackTrace();
                             return CompletableFuture.failedFuture(e);
                         }
                     }
@@ -160,40 +179,52 @@ public class ApiService {
                 });
     }
 
-    public CompletableFuture<Internship> postInternship(Internship internship) {
+    public CompletableFuture<Internship> postInternship(InternshipCreateDTO dto) {
         try {
-            String body = objectMapper.writeValueAsString(internship);
-            HttpRequest request = baseBuilder("/api/internships")
+            String body = objectMapper.writeValueAsString(dto);
+            System.out.println("Sending internship creation request: " + body);
+            
+            HttpRequest request = baseBuilder("/api/company/internships?companyId=2")
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
             return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenCompose(resp -> {
+                        System.out.println("Response status: " + resp.statusCode());
+                        System.out.println("Response body: " + resp.body());
+                        
                         if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                             try {
-                                Internship created = objectMapper.readValue(resp.body(), Internship.class);
+                                InternshipDTO createdDto = objectMapper.readValue(resp.body(), InternshipDTO.class);
+                                Internship created = convertToInternship(createdDto);
                                 return CompletableFuture.completedFuture(created);
                             } catch (Exception e) {
+                                e.printStackTrace();
                                 return CompletableFuture.failedFuture(e);
                             }
                         }
-                        return CompletableFuture.failedFuture(new RuntimeException("Failed to post internship: " + resp.statusCode()));
+                        return CompletableFuture.failedFuture(new RuntimeException("Failed to post internship: " + resp.statusCode() + " - " + resp.body()));
                     });
         } catch (Exception e) {
+            e.printStackTrace();
             return CompletableFuture.failedFuture(e);
         }
     }
 
     public CompletableFuture<List<Task>> getTasksByInternshipId(long internshipId) {
-        HttpRequest request = baseBuilder("/api/tasks?internshipId=" + internshipId)
+        HttpRequest request = baseBuilder("/api/student/internships/" + internshipId + "/tasks")
                 .GET()
                 .build();
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenCompose(resp -> {
                     if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                         try {
-                            List<Task> list = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<TaskDTO> dtoList = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<Task> list = dtoList.stream()
+                                    .map(taskDto -> convertToTask(taskDto, internshipId))
+                                    .toList();
                             return CompletableFuture.completedFuture(list);
                         } catch (Exception e) {
+                            e.printStackTrace();
                             return CompletableFuture.failedFuture(e);
                         }
                     }
@@ -201,29 +232,54 @@ public class ApiService {
                 });
     }
 
-    public CompletableFuture<Task> createTask(Task task) {
+    public CompletableFuture<Task> createTask(TaskDTO taskDto, Long internshipId) {
         try {
-            String body = objectMapper.writeValueAsString(task);
-            HttpRequest request = baseBuilder("/api/tasks")
+            String body = objectMapper.writeValueAsString(taskDto);
+            System.out.println("Sending task creation request: " + body);
+            
+            HttpRequest request = baseBuilder("/api/mentor/internships/" + internshipId + "/tasks")
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
             return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenCompose(resp -> {
+                        System.out.println("Response status: " + resp.statusCode());
+                        System.out.println("Response body: " + resp.body());
+                        
                         if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                             try {
-                                Task created = objectMapper.readValue(resp.body(), Task.class);
+                                TaskDTO createdDto = objectMapper.readValue(resp.body(), TaskDTO.class);
+                                Task created = convertToTask(createdDto, internshipId);
                                 return CompletableFuture.completedFuture(created);
                             } catch (Exception e) {
+                                e.printStackTrace();
                                 return CompletableFuture.failedFuture(e);
                             }
                         }
-                        return CompletableFuture.failedFuture(new RuntimeException("Failed to create task: " + resp.statusCode()));
+                        return CompletableFuture.failedFuture(new RuntimeException("Failed to create task: " + resp.statusCode() + " - " + resp.body()));
                     });
         } catch (Exception e) {
+            e.printStackTrace();
             return CompletableFuture.failedFuture(e);
         }
     }
+
+    // Helper methods to convert between DTOs and model objects
+    private Internship convertToInternship(InternshipDTO dto) {
+        Internship internship = new Internship();
+        internship.setId(dto.getId());
+        internship.setTitle(dto.getTitle());
+        internship.setCompany(dto.getCompanyName() != null ? dto.getCompanyName() : "Company");
+        internship.setRequirements(dto.getRequirements() != null ? dto.getRequirements() : "");
+        internship.setDescription(dto.getDescription() != null ? dto.getDescription() : "");
+        return internship;
+    }
+
+    private Task convertToTask(TaskDTO dto, Long internshipId) {
+        Task task = new Task();
+        task.setId(null); // Will be set by backend
+        task.setInternshipId(internshipId);
+        task.setTitle(dto.getTitle());
+        task.setDescription(dto.getDescription());
+        return task;
+    }
 }
-
-
-

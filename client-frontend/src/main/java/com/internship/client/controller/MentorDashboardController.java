@@ -1,8 +1,7 @@
 package com.internship.client.controller;
 
 import com.internship.client.main.AppContext;
-import com.internship.client.model.Internship;
-import com.internship.client.model.Task; // <-- keep your model Task
+import com.internship.client.model.*;
 import com.internship.client.service.ApiService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -14,20 +13,18 @@ import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MentorDashboardController {
 
-    // Stats Labels
     @FXML private Label assignedStudentsLabel;
     @FXML private Label pendingTasksLabel;
     @FXML private Label completedSubmissionsLabel;
     @FXML private Label avgGradeLabel;
-
-    // Main TabPane
     @FXML private TabPane mainTabPane;
 
-    // Students Table
     @FXML private TableView<Object> studentsTable;
     @FXML private TableColumn<Object, String> studentNameCol;
     @FXML private TableColumn<Object, String> internshipCol;
@@ -35,7 +32,6 @@ public class MentorDashboardController {
     @FXML private TableColumn<Object, LocalDate> lastActivityCol;
     @FXML private TableColumn<Object, Void> studentActionsCol;
 
-    // Tasks Table
     @FXML private TableView<Task> tasksTable;
     @FXML private TableColumn<Task, String> taskTitleCol;
     @FXML private TableColumn<Task, String> assignedToCol;
@@ -43,7 +39,6 @@ public class MentorDashboardController {
     @FXML private TableColumn<Task, String> taskStatusCol;
     @FXML private TableColumn<Task, Void> taskActionsCol;
 
-    // Task Form Fields
     @FXML private TextField taskTitleField;
     @FXML private TextArea taskDescriptionArea;
     @FXML private DatePicker taskDeadlinePicker;
@@ -54,21 +49,19 @@ public class MentorDashboardController {
     @FXML private TextField attachmentUrlsField;
     @FXML private TextField referenceLinksField;
 
-    // Buttons
     @FXML private Button refreshBtn;
     @FXML private Button messageStudentsBtn;
     @FXML private Button createTaskBtn;
     @FXML private Button clearTaskFormBtn;
     @FXML private Button submitTaskFormBtn;
     @FXML private Button logoutBtn;
-
-    // Other Controls
     @FXML private Label statusLabel;
     @FXML private ProgressIndicator loadingIndicator;
 
     private final ObservableList<Object> studentsData = FXCollections.observableArrayList();
     private final ObservableList<Task> tasksData = FXCollections.observableArrayList();
     private final ApiService apiService = AppContext.api();
+    private Long currentInternshipId = null;
 
     @FXML
     public void initialize() {
@@ -80,68 +73,76 @@ public class MentorDashboardController {
     }
 
     private void setupColumns() {
-        // Students table columns
-        studentNameCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Student Name"));
-        internshipCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Internship Title"));
-        progressCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("75%"));
-        lastActivityCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(LocalDate.now()));
+        studentNameCol.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty("Student Name"));
+        internshipCol.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty("Internship Title"));
+        progressCol.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty("75%"));
+        lastActivityCol.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleObjectProperty<>(LocalDate.now()));
 
-        // Student actions column
-        studentActionsCol.setCellFactory(new Callback<TableColumn<Object, Void>, TableCell<Object, Void>>() {
+        studentActionsCol.setCellFactory(param -> new TableCell<Object, Void>() {
+            private final Button messageBtn = new Button("Message");
+
+            {
+                messageBtn.setOnAction(e -> {
+                    if (getIndex() < getTableView().getItems().size()) {
+                        Object item = getTableView().getItems().get(getIndex());
+                        handleMessageStudent(item);
+                    }
+                });
+            }
+
             @Override
-            public TableCell<Object, Void> call(TableColumn<Object, Void> param) {
-                return new TableCell<Object, Void>() {
-                    private final Button messageBtn = new Button("Message");
-
-                    {
-                        messageBtn.setOnAction(e -> handleMessageStudent(getTableView().getItems().get(getIndex())));
-                    }
-
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(messageBtn);
-                        }
-                    }
-                };
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(messageBtn);
+                }
             }
         });
 
         studentsTable.setItems(studentsData);
 
-        // Tasks table columns
         taskTitleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-        assignedToCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Student Name"));
-        deadlineCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(LocalDate.now()));
-        taskStatusCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Pending"));
+        assignedToCol.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty("All Students"));
+        deadlineCol.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleObjectProperty<>(LocalDate.now().plusDays(7)));
+        taskStatusCol.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty("Pending"));
 
-        // Task actions column
-        taskActionsCol.setCellFactory(new Callback<TableColumn<Task, Void>, TableCell<Task, Void>>() {
+        taskActionsCol.setCellFactory(param -> new TableCell<Task, Void>() {
+            private final Button gradeBtn = new Button("Grade");
+            private final Button editBtn = new Button("Edit");
+
+            {
+                gradeBtn.setOnAction(e -> {
+                    if (getIndex() < getTableView().getItems().size()) {
+                        Task item = getTableView().getItems().get(getIndex());
+                        handleGradeTask(item);
+                    }
+                });
+                editBtn.setOnAction(e -> {
+                    if (getIndex() < getTableView().getItems().size()) {
+                        Task item = getTableView().getItems().get(getIndex());
+                        handleEditTask(item);
+                    }
+                });
+            }
+
             @Override
-            public TableCell<Task, Void> call(TableColumn<Task, Void> param) {
-                return new TableCell<Task, Void>() {
-                    private final Button gradeBtn = new Button("Grade");
-                    private final Button editBtn = new Button("Edit");
-
-                    {
-                        gradeBtn.setOnAction(e -> handleGradeTask(getTableView().getItems().get(getIndex())));
-                        editBtn.setOnAction(e -> handleEditTask(getTableView().getItems().get(getIndex())));
-                    }
-
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            HBox hbox = new HBox(5, gradeBtn, editBtn);
-                            setGraphic(hbox);
-                        }
-                    }
-                };
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    HBox hbox = new HBox(5, gradeBtn, editBtn);
+                    setGraphic(hbox);
+                }
             }
         });
 
@@ -149,14 +150,25 @@ public class MentorDashboardController {
     }
 
     private void setupComboBoxes() {
-        priorityCombo.getItems().addAll("LOW", "MEDIUM", "HIGH", "URGENT");
-        studentCombo.getItems().addAll("Student 1", "Student 2", "Student 3"); // TODO: Load dynamically
+        if (priorityCombo != null) {
+            priorityCombo.getItems().addAll("LOW", "MEDIUM", "HIGH", "URGENT");
+            priorityCombo.getSelectionModel().select("MEDIUM");
+        }
+        if (studentCombo != null) {
+            studentCombo.getItems().addAll("All Students", "Student 1", "Student 2", "Student 3");
+            studentCombo.getSelectionModel().select("All Students");
+        }
     }
 
     private void loadStats() {
-        apiService.getInternships()
+        apiService.getMentorInternships()
                 .whenComplete((internships, ex) -> Platform.runLater(() -> {
-                    if (ex == null) {
+                    if (ex == null && internships != null) {
+                        assignedStudentsLabel.setText("0");
+                        pendingTasksLabel.setText(String.valueOf(tasksData.size()));
+                        completedSubmissionsLabel.setText("0");
+                        avgGradeLabel.setText("0.0");
+                    } else {
                         assignedStudentsLabel.setText("0");
                         pendingTasksLabel.setText("0");
                         completedSubmissionsLabel.setText("0");
@@ -171,7 +183,7 @@ public class MentorDashboardController {
     }
 
     private void loadStudents() {
-        studentsData.clear(); // TODO: Load from API
+        studentsData.clear();
     }
 
     private void loadTasks() {
@@ -188,10 +200,12 @@ public class MentorDashboardController {
         internshipsTask.setOnSucceeded(e -> {
             List<Internship> internships = internshipsTask.getValue();
             if (internships != null && !internships.isEmpty()) {
-                loadTasksForInternship(internships.get(0).getId());
+                currentInternshipId = internships.get(0).getId();
+                loadTasksForInternship(currentInternshipId);
             } else {
                 if (loadingIndicator != null) loadingIndicator.setVisible(false);
                 if (refreshBtn != null) refreshBtn.setDisable(false);
+                if (statusLabel != null) statusLabel.setText("No internships found");
             }
         });
 
@@ -199,14 +213,16 @@ public class MentorDashboardController {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             Throwable ex = internshipsTask.getException();
-            ex.printStackTrace();
-            showError("Failed to load internships: " + ex.getMessage());
+            if (ex != null) {
+                ex.printStackTrace();
+                showError("Failed to load internships: " + ex.getMessage());
+            }
         });
 
         new Thread(internshipsTask).start();
     }
 
-    private void loadTasksForInternship(long internshipId) {
+    private void loadTasksForInternship(Long internshipId) {
         javafx.concurrent.Task<List<Task>> taskLoader = new javafx.concurrent.Task<>() {
             @Override
             protected List<Task> call() {
@@ -218,121 +234,162 @@ public class MentorDashboardController {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             tasksData.clear();
-            tasksData.addAll(taskLoader.getValue());
-            if (statusLabel != null) statusLabel.setText("Tasks loaded");
+            List<Task> result = taskLoader.getValue();
+            if (result != null) {
+                tasksData.addAll(result);
+            }
+            if (statusLabel != null) statusLabel.setText("Tasks loaded: " + tasksData.size());
         });
 
         taskLoader.setOnFailed(e -> {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             Throwable ex = taskLoader.getException();
-            ex.printStackTrace();
-            showError("Failed to load tasks: " + ex.getMessage());
+            if (ex != null) {
+                ex.printStackTrace();
+                showError("Failed to load tasks: " + ex.getMessage());
+            }
         });
 
         new Thread(taskLoader).start();
     }
 
     private void setupEventHandlers() {
-        refreshBtn.setOnAction(e -> handleRefresh());
-        messageStudentsBtn.setOnAction(e -> handleMessageStudents());
-        createTaskBtn.setOnAction(e -> handleCreateTask());
-        clearTaskFormBtn.setOnAction(e -> handleClearTaskForm());
-        submitTaskFormBtn.setOnAction(e -> handleSubmitTaskForm());
-        logoutBtn.setOnAction(e -> handleLogout());
+        if (refreshBtn != null) refreshBtn.setOnAction(e -> handleRefresh());
+        if (messageStudentsBtn != null) messageStudentsBtn.setOnAction(e -> handleMessageStudents());
+        if (createTaskBtn != null) createTaskBtn.setOnAction(e -> handleCreateTask());
+        if (clearTaskFormBtn != null) clearTaskFormBtn.setOnAction(e -> handleClearTaskForm());
+        if (submitTaskFormBtn != null) submitTaskFormBtn.setOnAction(e -> handleSubmitTaskForm());
+        if (logoutBtn != null) logoutBtn.setOnAction(e -> handleLogout());
     }
 
     @FXML
     private void handleRefresh() {
         loadData();
         loadStats();
-        statusLabel.setText("Data refreshed");
+        if (statusLabel != null) statusLabel.setText("Data refreshed");
     }
 
     @FXML
     private void handleMessageStudents() {
-        statusLabel.setText("Messaging all students");
+        if (statusLabel != null) statusLabel.setText("Messaging all students");
     }
 
     @FXML
     private void handleCreateTask() {
-        mainTabPane.getSelectionModel().select(2);
+        if (mainTabPane != null) mainTabPane.getSelectionModel().select(2);
     }
 
     @FXML
     private void handleClearTaskForm() {
-        taskTitleField.clear();
-        taskDescriptionArea.clear();
-        taskDeadlinePicker.setValue(null);
-        studentCombo.getSelectionModel().clearSelection();
-        priorityCombo.getSelectionModel().clearSelection();
-        maxScoreField.clear();
-        gradingCriteriaArea.clear();
-        attachmentUrlsField.clear();
-        referenceLinksField.clear();
+        if (taskTitleField != null) taskTitleField.clear();
+        if (taskDescriptionArea != null) taskDescriptionArea.clear();
+        if (taskDeadlinePicker != null) taskDeadlinePicker.setValue(null);
+        if (studentCombo != null) studentCombo.getSelectionModel().clearSelection();
+        if (priorityCombo != null) priorityCombo.getSelectionModel().select("MEDIUM");
+        if (maxScoreField != null) maxScoreField.clear();
+        if (gradingCriteriaArea != null) gradingCriteriaArea.clear();
+        if (attachmentUrlsField != null) attachmentUrlsField.clear();
+        if (referenceLinksField != null) referenceLinksField.clear();
     }
 
     @FXML
     private void handleSubmitTaskForm() {
         if (!validateTaskForm()) return;
 
-        Task newTask = new Task(
-                null,
-                getSelectedInternshipId(),
-                taskTitleField.getText(),
-                taskDescriptionArea.getText()
-        );
+        if (currentInternshipId == null) {
+            showError("No internship selected. Please load internships first.");
+            return;
+        }
+
+        TaskDTO taskDto = new TaskDTO();
+        taskDto.setTitle(taskTitleField.getText().trim());
+        taskDto.setDescription(taskDescriptionArea.getText().trim());
+        taskDto.setDueDate(taskDeadlinePicker.getValue());
+        taskDto.setPriority(priorityCombo.getValue() != null ? priorityCombo.getValue() : "MEDIUM");
+        
+        // Set optional fields
+        if (maxScoreField != null && !maxScoreField.getText().trim().isEmpty()) {
+            try {
+                taskDto.setMaxScore(Integer.parseInt(maxScoreField.getText().trim()));
+            } catch (NumberFormatException e) {
+                taskDto.setMaxScore(100);
+            }
+        } else {
+            taskDto.setMaxScore(100);
+        }
+        
+        if (gradingCriteriaArea != null && !gradingCriteriaArea.getText().trim().isEmpty()) {
+            taskDto.setGradingCriteria(gradingCriteriaArea.getText().trim());
+        } else {
+            taskDto.setGradingCriteria("Complete the task as described");
+        }
+        
+        if (attachmentUrlsField != null && !attachmentUrlsField.getText().trim().isEmpty()) {
+            taskDto.setAttachmentUrls(Arrays.asList(attachmentUrlsField.getText().split(",")));
+        } else {
+            taskDto.setAttachmentUrls(new ArrayList<>());
+        }
+        
+        if (referenceLinksField != null && !referenceLinksField.getText().trim().isEmpty()) {
+            taskDto.setReferenceLinks(Arrays.asList(referenceLinksField.getText().split(",")));
+        } else {
+            taskDto.setReferenceLinks(new ArrayList<>());
+        }
 
         submitTaskFormBtn.setDisable(true);
-        apiService.createTask(newTask)
+        apiService.createTask(taskDto, currentInternshipId)
                 .whenComplete((created, ex) -> Platform.runLater(() -> {
                     submitTaskFormBtn.setDisable(false);
-                    if (ex == null) {
+                    if (ex == null && created != null) {
                         tasksData.add(0, created);
                         handleClearTaskForm();
-                        mainTabPane.getSelectionModel().select(1);
-                        statusLabel.setText("Task created successfully");
+                        if (mainTabPane != null) mainTabPane.getSelectionModel().select(1);
+                        if (statusLabel != null) statusLabel.setText("Task created successfully");
                         showSuccess("Task created successfully");
+                        loadStats();
                     } else {
-                        showError("Failed to create task: " + ex.getMessage());
+                        String errorMsg = ex != null ? ex.getMessage() : "Unknown error";
+                        showError("Failed to create task: " + errorMsg);
+                        if (ex != null) ex.printStackTrace();
                     }
                 }));
     }
 
     private boolean validateTaskForm() {
-        if (taskTitleField.getText().trim().isEmpty()) {
+        if (taskTitleField == null || taskTitleField.getText().trim().isEmpty()) {
             showError("Title is required");
             return false;
         }
-        if (taskDescriptionArea.getText().trim().isEmpty()) {
+        if (taskDescriptionArea == null || taskDescriptionArea.getText().trim().isEmpty()) {
             showError("Description is required");
             return false;
         }
-        if (taskDeadlinePicker.getValue() == null) {
+        if (taskDeadlinePicker == null || taskDeadlinePicker.getValue() == null) {
             showError("Deadline is required");
             return false;
         }
-        if (studentCombo.getSelectionModel().getSelectedItem() == null) {
+        if (taskDeadlinePicker.getValue().isBefore(LocalDate.now())) {
+            showError("Deadline must be in the future");
+            return false;
+        }
+        if (studentCombo == null || studentCombo.getSelectionModel().getSelectedItem() == null) {
             showError("Student selection is required");
             return false;
         }
         return true;
     }
 
-    private Long getSelectedInternshipId() {
-        return 1L; // TODO: Replace with actual internship ID
-    }
-
     private void handleMessageStudent(Object student) {
-        statusLabel.setText("Messaging student");
+        if (statusLabel != null) statusLabel.setText("Messaging student");
     }
 
     private void handleGradeTask(Task task) {
-        statusLabel.setText("Grading task: " + task.getTitle());
+        if (statusLabel != null) statusLabel.setText("Grading task: " + task.getTitle());
     }
 
     private void handleEditTask(Task task) {
-        statusLabel.setText("Editing task: " + task.getTitle());
+        if (statusLabel != null) statusLabel.setText("Editing task: " + task.getTitle());
     }
 
     private void showError(String message) {
