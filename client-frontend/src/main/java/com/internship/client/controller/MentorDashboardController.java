@@ -353,7 +353,7 @@ public class MentorDashboardController {
         confirmDialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 AppContext.api().logout();
-                AppContext.getSceneManager().showLogin();
+                AppContext.getSceneManager().switchToLogin();
             }
         });
     }

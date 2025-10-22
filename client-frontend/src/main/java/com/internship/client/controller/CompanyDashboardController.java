@@ -314,20 +314,25 @@ public class CompanyDashboardController {
         alert.showAndWait();
     }
     
+
     @FXML
-    private void handleLogout() {
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Confirm Logout");
-        confirmDialog.setHeaderText("Logout");
-        confirmDialog.setContentText("Are you sure you want to logout?");
-        
-        confirmDialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
+private void handleLogout() {
+    Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+    confirmDialog.setTitle("Confirm Logout");
+    confirmDialog.setHeaderText("Logout");
+    confirmDialog.setContentText("Are you sure you want to logout?");
+    
+    confirmDialog.showAndWait().ifPresent(response -> {
+        if (response == ButtonType.OK) {
+            try {
                 AppContext.api().logout();
-                AppContext.getSceneManager().showLogin();
+                AppContext.getSceneManager().switchToLogin(); // Changed from showLogin
+            } catch (Exception e) {
+                showError("Logout failed: " + e.getMessage());
             }
-        });
-    }
+        }
+    });
+}
 
     private void showSuccess(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

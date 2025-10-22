@@ -303,8 +303,12 @@ public class StudentDashboardController {
         
         confirmDialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                AppContext.api().logout();
-                AppContext.getSceneManager().showLogin();
+                try {
+                    AppContext.api().logout();
+                    AppContext.getSceneManager().switchToLogin(); // Changed from showLogin
+                } catch (Exception e) {
+                    showError("Logout failed: " + e.getMessage());
+                }
             }
         });
     }
