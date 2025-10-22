@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface SubmissionRepository extends JpaRepository<Submission, Long> {
-
+    List<Submission> findByStudentId(Long studentId);
     /**
      * Finds all submissions associated with a specific task.
      * This is crucial for the plagiarism check to compare all submissions for a given task.

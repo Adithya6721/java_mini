@@ -26,6 +26,7 @@ com\internship\virtualinternship\VirtualInternshipApplication.class
 com\internship\virtualinternship\controller\UnauthorizedException.class
 com\internship\virtualinternship\repository\AssessmentRepository.class
 com\internship\virtualinternship\model\Task.class
+com\internship\virtualinternship\DataInitializer.class
 com\internship\virtualinternship\service\ApplicationService.class
 com\internship\virtualinternship\controller\dto\SubmissionResponseDto.class
 com\internship\virtualinternship\service\InternshipService.class

@@ -44,12 +44,11 @@ public class SubmissionService {
                 .orElseThrow(() -> new RuntimeException("Submission not found"));
     }
 
+    // --- ADD THIS METHOD (or replace your old one) ---
     public List<Submission> findByStudent(Long studentId) {
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-        return submissionRepository.findAll().stream()
-                .filter(submission -> submission.getStudent().getId().equals(studentId))
-                .collect(java.util.stream.Collectors.toList());
+        // This is much more efficient than loading all submissions
+        // It requires the findByStudentId method in SubmissionRepository
+        return submissionRepository.findByStudentId(studentId);
     }
 
     public List<Submission> findByTask(Long taskId) {
