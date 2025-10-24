@@ -194,7 +194,7 @@ public class StudentDashboardController {
             }
         };
 
-        task.setOnSucceeded(_ -> {
+        task.setOnSucceeded(event -> {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             browseData.clear();
@@ -202,7 +202,7 @@ public class StudentDashboardController {
             if (statusLabel != null) statusLabel.setText("Internships loaded");
         });
 
-        task.setOnFailed(_ -> {
+        task.setOnFailed(event -> {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             Throwable ex = task.getException();

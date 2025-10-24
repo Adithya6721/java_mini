@@ -38,12 +38,14 @@ public class CompanyController {
     }
 
     @GetMapping("/internships")
-    public ResponseEntity<Page<InternshipResponseDto>> listCompanyInternships(@RequestParam("companyId") Long companyId, Pageable pageable) {
+    public ResponseEntity<?> listCompanyInternships(@RequestParam("companyId") Long companyId, Pageable pageable) {
         try {
             Page<InternshipResponseDto> response = internshipService.findByCompany(companyId, pageable);
-            return ResponseEntity.ok(response);
+            // Return the content as a list for easier client consumption
+            return ResponseEntity.ok(response.getContent());
         } catch (Exception e) {
-            throw new ResourceNotFoundException("Failed to fetch internships: " + e.getMessage());
+            e.printStackTrace();
+            throw new ResourceNotFoundException("Failed to fetch company internships: " + e.getMessage());
         }
     }
 

@@ -179,14 +179,14 @@ public class CompanyDashboardController {
                 return apiService.getCompanyInternships().join();
             }
         };
-        task.setOnSucceeded(_ -> {
+        task.setOnSucceeded(event -> {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             internshipsData.clear();
             internshipsData.addAll(task.getValue());
             if (statusLabel != null) statusLabel.setText("Internships loaded");
         });
-        task.setOnFailed(_ -> {
+        task.setOnFailed(event -> {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             Throwable ex = task.getException();

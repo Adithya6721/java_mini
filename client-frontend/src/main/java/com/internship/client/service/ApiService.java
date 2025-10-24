@@ -237,7 +237,8 @@ public class ApiService {
             String body = objectMapper.writeValueAsString(taskDto);
             System.out.println("Sending task creation request: " + body);
             
-            HttpRequest request = baseBuilder("/api/mentor/internships/" + internshipId + "/tasks")
+            // Use mentorId=3 (the mentor user created in DataInitializer)
+            HttpRequest request = baseBuilder("/api/mentor/internships/" + internshipId + "/tasks?mentorId=3")
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
             return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())

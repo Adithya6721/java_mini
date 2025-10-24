@@ -28,26 +28,40 @@ public class StudentController {
     }
 
     // Get all available internships
-    /*@GetMapping("/internships")
-    public ResponseEntity<List<Internship>> getAllInternships() {
+    @GetMapping("/internships/available")
+    public ResponseEntity<List<com.internship.virtualinternship.controller.dto.InternshipResponseDto>> getAllInternships() {
         try {
-            List<Internship> internships = internshipService.findAll(); // Make sure InternshipService has findAll()
+            List<com.internship.virtualinternship.controller.dto.InternshipResponseDto> internships = internshipService.findAll();
             return ResponseEntity.ok(internships);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
-    }*/
+    }
 
     // Get internship by id
-    /*@GetMapping("/internships/{id}")
-    public ResponseEntity<Internship> getInternshipById(@PathVariable Long id) {
+    @GetMapping("/internships/{id}")
+    public ResponseEntity<com.internship.virtualinternship.controller.dto.InternshipResponseDto> getInternshipById(@PathVariable Long id) {
         try {
-            Internship internship = internshipService.findById(id); // Make sure InternshipService has findById()
+            com.internship.virtualinternship.controller.dto.InternshipResponseDto internship = internshipService.findById(id);
             return ResponseEntity.ok(internship);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.notFound().build();
         }
-    }*/
+    }
+
+    // Get tasks for a specific internship
+    @GetMapping("/internships/{id}/tasks")
+    public ResponseEntity<List<Task>> getTasksForInternship(@PathVariable Long id) {
+        try {
+            List<Task> tasks = taskService.findByInternship(id);
+            return ResponseEntity.ok(tasks);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
     // Apply for an internship
     @PostMapping("/applications")
     public ResponseEntity<Application> applyForInternship(
