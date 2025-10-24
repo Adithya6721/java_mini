@@ -32,7 +32,7 @@ public class TaskService {
         task.setDescription(dto.getDescription());
         task.setDueDate(Date.from(dto.getDueDate().atStartOfDay(ZoneId.systemDefault()).toInstant()));
         task.setInternship(internship);
-        
+        // mentor is optional for now; could be set via security context later
         return taskRepository.save(task);
     }
 

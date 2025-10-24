@@ -5,16 +5,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class InternshipRequestDto {
+    // Keep the truly required fields minimal to match the client
     @NotBlank private String title;
     @NotBlank private String description;
-    @NotBlank private String duration;
-    @NotNull @Min(0) private Integer stipend;
-    @NotBlank private String location;
+    private String duration; // optional
+    private Integer stipend; // optional
+    private String location; // optional
     @NotBlank private String requirements;
-    @NotBlank private String responsibilities;
-    @NotNull private List<String> skills;
-    @NotNull private List<String> perks;
-    @NotNull @Min(1) private Integer openings;
+    private String responsibilities; // optional
+    private List<String> skills; // optional
+    private List<String> perks; // optional
+    private Integer openings; // optional
     @NotNull private LocalDate deadline;
 
     public String getTitle() { return title; }

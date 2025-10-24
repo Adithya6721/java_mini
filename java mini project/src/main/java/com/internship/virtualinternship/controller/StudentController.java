@@ -1,5 +1,7 @@
 package com.internship.virtualinternship.controller;
 
+import com.internship.virtualinternship.controller.dto.InternshipResponseDto;
+import com.internship.virtualinternship.controller.dto.TaskResponseDto;
 import com.internship.virtualinternship.model.*;
 import com.internship.virtualinternship.service.*;
 import org.springframework.http.ResponseEntity;
@@ -27,27 +29,30 @@ public class StudentController {
         this.submissionService = submissionService;
     }
 
-    // Get all available internships
-    /*@GetMapping("/internships")
-    public ResponseEntity<List<Internship>> getAllInternships() {
+    // List all available internships for browsing (student and mentor use this)
+    @GetMapping("/internships/available")
+    public ResponseEntity<List<InternshipResponseDto>> getAvailableInternships() {
         try {
-            List<Internship> internships = internshipService.findAll(); // Make sure InternshipService has findAll()
+            List<InternshipResponseDto> internships = internshipService.findAll();
             return ResponseEntity.ok(internships);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
-    }*/
+    }
 
-    // Get internship by id
-    /*@GetMapping("/internships/{id}")
-    public ResponseEntity<Internship> getInternshipById(@PathVariable Long id) {
+    // List tasks for a specific internship (student view)
+    @GetMapping("/internships/{id}/tasks")
+    public ResponseEntity<List<TaskResponseDto>> getTasksByInternship(@PathVariable("id") Long internshipId) {
         try {
-            Internship internship = internshipService.findById(id); // Make sure InternshipService has findById()
-            return ResponseEntity.ok(internship);
+            List<Task> tasks = taskService.findByInternship(internshipId);
+            List<TaskResponseDto> response = tasks.stream()
+                    .map(this::convertToTaskResponseDto)
+                    .toList();
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.internalServerError().build();
         }
-    }*/
+    }
     // Apply for an internship
     @PostMapping("/applications")
     public ResponseEntity<Application> applyForInternship(
@@ -123,5 +128,16 @@ public class StudentController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private TaskResponseDto convertToTaskResponseDto(Task task) {
+        TaskResponseDto dto = new TaskResponseDto();
+        dto.setId(task.getId());
+        dto.setTitle(task.getTitle());
+        dto.setDescription(task.getDescription());
+        dto.setDueDate(task.getDueDate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate());
+        dto.setInternshipTitle(task.getInternship().getTitle());
+        dto.setInternshipId(task.getInternship().getId());
+        return dto;
     }
 }

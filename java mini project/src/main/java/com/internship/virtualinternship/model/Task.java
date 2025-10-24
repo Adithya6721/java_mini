@@ -32,7 +32,7 @@ public class Task {
     private Internship internship;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mentor_id", nullable = false)
+    @JoinColumn(name = "mentor_id", nullable = true)
     private User mentor;
 
     /**
