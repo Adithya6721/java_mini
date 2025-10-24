@@ -103,9 +103,8 @@ public class MentorController {
             // Set the score and feedback properly
             submission.setScore(dto.getScore());
             submission.setFeedback(dto.getFeedback());
-            
-            // Update the submission
-            Submission updated = submissionService.update(id, convertToSubmissionRequestDto(submission));
+            // Persist updated score/feedback directly
+            Submission updated = submissionService.updateSubmission(submission);
             SubmissionResponseDto response = convertToResponseDto(updated);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
