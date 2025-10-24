@@ -68,11 +68,15 @@ public class StudentController {
     // Get student's applications
     // FIXED: Changed URL to /applications/my to avoid conflict
     @GetMapping("/applications/my") 
-    public ResponseEntity<List<Application>> getMyApplications(@RequestParam Long studentId) {
+    public ResponseEntity<List<com.internship.virtualinternship.controller.dto.ApplicationResponseDto>> getMyApplications(@RequestParam Long studentId) {
         try {
             List<Application> applications = applicationService.findByStudent(studentId);
-            return ResponseEntity.ok(applications);
+            List<com.internship.virtualinternship.controller.dto.ApplicationResponseDto> response = applications.stream()
+                    .map(this::convertToApplicationResponseDto)
+                    .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }

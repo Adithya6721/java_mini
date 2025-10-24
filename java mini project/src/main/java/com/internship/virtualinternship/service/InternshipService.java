@@ -97,7 +97,8 @@ public class InternshipService {
         dto.setTitle(internship.getTitle());
         dto.setDescription(internship.getDescription());
         dto.setRequirements(internship.getRequirements());
-        dto.setDeadline(internship.getDeadline().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        // Fix for java.sql.Date.toInstant() UnsupportedOperationException
+        dto.setDeadline(new java.sql.Date(internship.getDeadline().getTime()).toLocalDate());
         dto.setCompanyName(internship.getCompany().getUsername());
         
         // Count applications for this internship
