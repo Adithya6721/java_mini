@@ -11,10 +11,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
-import javafx.concurrent.Task;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class StudentDashboardController {
 
@@ -43,11 +43,11 @@ public class StudentDashboardController {
     @FXML private TableColumn<com.internship.client.model.Application, Void> appActionsCol;
 
     // Tasks Table
-    @FXML private TableView<Internship> tasksTable; // Changed to Internship temporarily if you don’t have a model class
-    @FXML private TableColumn<Internship, String> taskTitleCol;
-    @FXML private TableColumn<Internship, LocalDate> taskDeadlineCol;
-    @FXML private TableColumn<Internship, String> taskStatusCol;
-    @FXML private TableColumn<Internship, Void> taskActionsCol;
+    @FXML private TableView<com.internship.client.model.Task> tasksTable;
+    @FXML private TableColumn<com.internship.client.model.Task, String> taskTitleCol;
+    @FXML private TableColumn<com.internship.client.model.Task, LocalDate> taskDeadlineCol;
+    @FXML private TableColumn<com.internship.client.model.Task, String> taskStatusCol;
+    @FXML private TableColumn<com.internship.client.model.Task, Void> taskActionsCol;
 
     // Submissions Table
     @FXML private TableView<Object> submissionsTable;
@@ -188,30 +188,20 @@ public class StudentDashboardController {
         if (loadingIndicator != null) loadingIndicator.setVisible(true);
         if (refreshBtn != null) refreshBtn.setDisable(true);
 
-        Task<List<Internship>> task = new Task<>() {
-            @Override
-            protected List<Internship> call() {
-                return apiService.getInternships().join();
-            }
-        };
-
-        task.setOnSucceeded(event -> {
-            if (loadingIndicator != null) loadingIndicator.setVisible(false);
-            if (refreshBtn != null) refreshBtn.setDisable(false);
-            browseData.clear();
-            browseData.addAll(task.getValue());
-            if (statusLabel != null) statusLabel.setText("Internships loaded");
-        });
-
-        task.setOnFailed(event -> {
-            if (loadingIndicator != null) loadingIndicator.setVisible(false);
-            if (refreshBtn != null) refreshBtn.setDisable(false);
-            Throwable ex = task.getException();
-            ex.printStackTrace();
-            showError("Failed to load internships: " + ex.getMessage());
-        });
-
-        new Thread(task).start();
+        apiService.getInternships()
+                .whenComplete((internships, ex) -> Platform.runLater(() -> {
+                    if (loadingIndicator != null) loadingIndicator.setVisible(false);
+                    if (refreshBtn != null) refreshBtn.setDisable(false);
+                    
+                    if (ex == null) {
+                        browseData.clear();
+                        browseData.addAll(internships);
+                        if (statusLabel != null) statusLabel.setText("Internships loaded");
+                    } else {
+                        ex.printStackTrace();
+                        showError("Failed to load internships: " + ex.getMessage());
+                    }
+                }));
     }
 
     private void loadApplications() {
@@ -360,7 +350,7 @@ public class StudentDashboardController {
             if (response == ButtonType.OK) {
                 try {
                     AppContext.api().logout();
-                    AppContext.getSceneManager().switchToLogin(); // Changed from showLogin
+                    AppContext.getSceneManager().switchToLogin();
                 } catch (Exception e) {
                     showError("Logout failed: " + e.getMessage());
                 }

@@ -1,11 +1,14 @@
 com/internship/client/controller/MentorDashboardController$1.class
 com/internship/client/main/LoadingOverlay.class
 com/internship/client/model/LoginResponse.class
+com/internship/client/service/ApiService$5.class
 com/internship/client/service/ApiService$1.class
 com/internship/client/model/InternshipDTO.class
 com/internship/client/controller/CompanyDashboardController$3.class
+com/internship/client/model/ApplicationDTO.class
 com/internship/client/service/ApiService.class
 com/internship/client/controller/StudentDashboardController$3.class
+com/internship/client/model/Application.class
 com/internship/client/model/Internship.class
 com/internship/client/service/ApiService$4.class
 com/internship/client/service/ApiService$2.class
@@ -39,5 +42,5 @@ com/internship/client/main/AppContext.class
 com/internship/client/controller/MentorDashboardController$2.class
 com/internship/client/main/SceneManager.class
 com/internship/client/controller/CompanyDashboardController$1$1.class
+com/internship/client/service/ApiService$6.class
 com/internship/client/controller/StudentDashboardController$1.class
-com/internship/client/controller/StudentDashboardController$4.class
