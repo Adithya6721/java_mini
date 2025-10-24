@@ -136,7 +136,7 @@ public class ApiService {
     }
 
     public CompletableFuture<List<Internship>> getCompanyInternships() {
-        HttpRequest request = baseBuilder("/api/company/internships?companyId=2")
+        HttpRequest request = baseBuilder("/api/company/internships?companyId=3")
                 .GET()
                 .build();
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
@@ -184,7 +184,7 @@ public class ApiService {
             String body = objectMapper.writeValueAsString(dto);
             System.out.println("Sending internship creation request: " + body);
             
-            HttpRequest request = baseBuilder("/api/company/internships?companyId=2")
+            HttpRequest request = baseBuilder("/api/company/internships?companyId=3")
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
             return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
@@ -237,8 +237,8 @@ public class ApiService {
             String body = objectMapper.writeValueAsString(taskDto);
             System.out.println("Sending task creation request: " + body);
             
-            // Use mentorId=3 (the mentor user created in DataInitializer)
-            HttpRequest request = baseBuilder("/api/mentor/internships/" + internshipId + "/tasks?mentorId=3")
+            // Use mentorId=4 (the mentor user created in DataInitializer)
+            HttpRequest request = baseBuilder("/api/mentor/internships/" + internshipId + "/tasks?mentorId=4")
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
             return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
@@ -282,5 +282,82 @@ public class ApiService {
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
         return task;
+    }
+
+    // Apply for an internship
+    public CompletableFuture<Void> applyForInternship(Long studentId, Long internshipId, String coverLetter) {
+        try {
+            String url = "/api/student/applications?studentId=" + studentId + "&internshipId=" + internshipId;
+            HttpRequest request = baseBuilder(url)
+                    .POST(HttpRequest.BodyPublishers.ofString("\"" + coverLetter + "\"", StandardCharsets.UTF_8))
+                    .build();
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenCompose(resp -> {
+                        if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                            return CompletableFuture.completedFuture(null);
+                        }
+                        return CompletableFuture.failedFuture(new RuntimeException("Failed to apply: " + resp.statusCode()));
+                    });
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    // Get student's applications
+    public CompletableFuture<List<com.internship.client.model.Application>> getMyApplications(Long studentId) {
+        HttpRequest request = baseBuilder("/api/student/applications/my?studentId=" + studentId)
+                .GET()
+                .build();
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenCompose(resp -> {
+                    if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                        try {
+                            List<ApplicationDTO> dtoList = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<com.internship.client.model.Application> list = dtoList.stream()
+                                    .map(this::convertToApplication)
+                                    .toList();
+                            return CompletableFuture.completedFuture(list);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return CompletableFuture.failedFuture(e);
+                        }
+                    }
+                    return CompletableFuture.failedFuture(new RuntimeException("Failed to fetch applications: " + resp.statusCode()));
+                });
+    }
+
+    // Get company's applications for their internships
+    public CompletableFuture<List<com.internship.client.model.Application>> getCompanyApplications(Long internshipId) {
+        HttpRequest request = baseBuilder("/api/company/internships/" + internshipId + "/applications")
+                .GET()
+                .build();
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenCompose(resp -> {
+                    if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                        try {
+                            List<ApplicationDTO> dtoList = objectMapper.readValue(resp.body(), new TypeReference<>() {});
+                            List<com.internship.client.model.Application> list = dtoList.stream()
+                                    .map(this::convertToApplication)
+                                    .toList();
+                            return CompletableFuture.completedFuture(list);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return CompletableFuture.failedFuture(e);
+                        }
+                    }
+                    return CompletableFuture.failedFuture(new RuntimeException("Failed to fetch company applications: " + resp.statusCode()));
+                });
+    }
+
+    private com.internship.client.model.Application convertToApplication(ApplicationDTO dto) {
+        com.internship.client.model.Application app = new com.internship.client.model.Application();
+        app.setId(dto.getId());
+        app.setStudentName(dto.getStudentName());
+        app.setInternshipTitle(dto.getInternshipTitle());
+        app.setStatus(dto.getStatus());
+        app.setApplicationDate(dto.getApplicationDate());
+        app.setCoverLetter(dto.getCoverLetter());
+        app.setResumeUrl(dto.getResumeUrl());
+        return app;
     }
 }

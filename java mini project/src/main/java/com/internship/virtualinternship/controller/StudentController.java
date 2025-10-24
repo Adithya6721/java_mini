@@ -51,17 +51,6 @@ public class StudentController {
         }
     }
 
-    // Get tasks for a specific internship
-    @GetMapping("/internships/{id}/tasks")
-    public ResponseEntity<List<Task>> getTasksForInternship(@PathVariable Long id) {
-        try {
-            List<Task> tasks = taskService.findByInternship(id);
-            return ResponseEntity.ok(tasks);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
-        }
-    }
     // Apply for an internship
     @PostMapping("/applications")
     public ResponseEntity<Application> applyForInternship(
@@ -137,5 +126,43 @@ public class StudentController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    // Get tasks for a specific internship
+    @GetMapping("/internships/{id}/tasks")
+    public ResponseEntity<List<com.internship.virtualinternship.controller.dto.TaskResponseDto>> getTasksForInternship(@PathVariable Long id) {
+        try {
+            List<Task> tasks = taskService.findByInternship(id);
+            List<com.internship.virtualinternship.controller.dto.TaskResponseDto> response = tasks.stream()
+                    .map(this::convertToTaskResponseDto)
+                    .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    private com.internship.virtualinternship.controller.dto.TaskResponseDto convertToTaskResponseDto(Task task) {
+        com.internship.virtualinternship.controller.dto.TaskResponseDto dto = new com.internship.virtualinternship.controller.dto.TaskResponseDto();
+        dto.setId(task.getId());
+        dto.setTitle(task.getTitle());
+        dto.setDescription(task.getDescription());
+        dto.setDueDate(new java.sql.Date(task.getDueDate().getTime()).toLocalDate());
+        dto.setInternshipTitle(task.getInternship().getTitle());
+        dto.setInternshipId(task.getInternship().getId());
+        return dto;
+    }
+    
+    private com.internship.virtualinternship.controller.dto.ApplicationResponseDto convertToApplicationResponseDto(Application application) {
+        com.internship.virtualinternship.controller.dto.ApplicationResponseDto dto = new com.internship.virtualinternship.controller.dto.ApplicationResponseDto();
+        dto.setId(application.getId());
+        dto.setStudentName(application.getStudent().getUsername());
+        dto.setInternshipTitle(application.getInternship().getTitle());
+        dto.setStatus(application.getStatus().toString());
+        dto.setApplicationDate(new java.sql.Date(application.getAppliedDate().getTime()).toLocalDate());
+        dto.setCoverLetter(application.getCoverLetter());
+        dto.setResumeUrl(application.getResumeUrl());
+        return dto;
     }
 }

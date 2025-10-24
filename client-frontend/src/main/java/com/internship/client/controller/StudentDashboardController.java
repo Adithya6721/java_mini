@@ -35,12 +35,12 @@ public class StudentDashboardController {
     @FXML private TableColumn<Internship, Void> browseActionsCol;
 
     // Applications Table
-    @FXML private TableView<Object> applicationsTable;
-    @FXML private TableColumn<Object, String> appCompanyCol;
-    @FXML private TableColumn<Object, String> appPositionCol;
-    @FXML private TableColumn<Object, String> appStatusCol;
-    @FXML private TableColumn<Object, LocalDate> appDateCol;
-    @FXML private TableColumn<Object, Void> appActionsCol;
+    @FXML private TableView<com.internship.client.model.Application> applicationsTable;
+    @FXML private TableColumn<com.internship.client.model.Application, String> appCompanyCol;
+    @FXML private TableColumn<com.internship.client.model.Application, String> appPositionCol;
+    @FXML private TableColumn<com.internship.client.model.Application, String> appStatusCol;
+    @FXML private TableColumn<com.internship.client.model.Application, LocalDate> appDateCol;
+    @FXML private TableColumn<com.internship.client.model.Application, Void> appActionsCol;
 
     // Tasks Table
     @FXML private TableView<Internship> tasksTable; // Changed to Internship temporarily if you don’t have a model class
@@ -72,10 +72,11 @@ public class StudentDashboardController {
     @FXML private ProgressIndicator loadingIndicator;
 
     private final ObservableList<Internship> browseData = FXCollections.observableArrayList();
-    private final ObservableList<Object> applicationsData = FXCollections.observableArrayList();
-    private final ObservableList<Internship> tasksData = FXCollections.observableArrayList();
+    private final ObservableList<com.internship.client.model.Application> applicationsData = FXCollections.observableArrayList();
+    private final ObservableList<com.internship.client.model.Task> tasksData = FXCollections.observableArrayList();
     private final ObservableList<Object> submissionsData = FXCollections.observableArrayList();
     private final ApiService apiService = AppContext.api();
+    private Long currentStudentId = 1L; // Student ID from login
 
     @FXML
     public void initialize() {
@@ -109,12 +110,12 @@ public class StudentDashboardController {
         browseTable.setItems(browseData);
 
         // Applications table columns
-        appCompanyCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Company Name"));
-        appPositionCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Position Title"));
-        appStatusCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("PENDING"));
-        appDateCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(LocalDate.now()));
+        appCompanyCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Company"));
+        appPositionCol.setCellValueFactory(new PropertyValueFactory<>("internshipTitle"));
+        appStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+        appDateCol.setCellValueFactory(new PropertyValueFactory<>("applicationDate"));
 
-        appActionsCol.setCellFactory(param -> new TableCell<Object, Void>() {
+        appActionsCol.setCellFactory(param -> new TableCell<com.internship.client.model.Application, Void>() {
             private final Button withdrawBtn = new Button("Withdraw");
             {
                 withdrawBtn.setOnAction(e -> handleWithdraw(getTableView().getItems().get(getIndex())));
@@ -129,10 +130,10 @@ public class StudentDashboardController {
 
         // Tasks table columns
         taskTitleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-        taskDeadlineCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(LocalDate.now()));
+        taskDeadlineCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(LocalDate.now().plusDays(7)));
         taskStatusCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("PENDING"));
 
-        taskActionsCol.setCellFactory(param -> new TableCell<Internship, Void>() {
+        taskActionsCol.setCellFactory(param -> new TableCell<com.internship.client.model.Task, Void>() {
             private final Button submitBtn = new Button("Submit");
             private final Button viewBtn = new Button("View");
             {
@@ -213,9 +214,52 @@ public class StudentDashboardController {
         new Thread(task).start();
     }
 
-    private void loadApplications() { applicationsData.clear(); }
+    private void loadApplications() {
+        apiService.getMyApplications(currentStudentId)
+                .whenComplete((applications, ex) -> Platform.runLater(() -> {
+                    if (ex == null) {
+                        applicationsData.clear();
+                        applicationsData.addAll(applications);
+                        if (statusLabel != null) statusLabel.setText("Applications loaded: " + applications.size());
+                    } else {
+                        ex.printStackTrace();
+                        System.err.println("Failed to load applications: " + ex.getMessage());
+                    }
+                }));
+    }
 
-    private void loadTasks() { tasksData.clear(); }
+    private void loadTasks() {
+        // Load tasks from accepted internships
+        apiService.getMyApplications(currentStudentId)
+                .thenCompose(applications -> {
+                    // Find accepted internships
+                    List<Long> acceptedInternshipIds = applications.stream()
+                            .filter(app -> "ACCEPTED".equals(app.getStatus()))
+                            .map(app -> {
+                                // We need to get internship ID - for now use a workaround
+                                return 1L; // This will be the first internship
+                            })
+                            .distinct()
+                            .toList();
+                    
+                    if (acceptedInternshipIds.isEmpty()) {
+                        return CompletableFuture.completedFuture(new java.util.ArrayList<com.internship.client.model.Task>());
+                    }
+                    
+                    // Load tasks for first accepted internship
+                    return apiService.getTasksByInternshipId(acceptedInternshipIds.get(0));
+                })
+                .whenComplete((tasks, ex) -> Platform.runLater(() -> {
+                    if (ex == null) {
+                        tasksData.clear();
+                        tasksData.addAll(tasks);
+                        if (statusLabel != null) statusLabel.setText("Tasks loaded: " + tasks.size());
+                    } else {
+                        ex.printStackTrace();
+                        System.err.println("Failed to load tasks: " + ex.getMessage());
+                    }
+                }));
+    }
 
     private void loadSubmissions() { submissionsData.clear(); }
 
@@ -262,10 +306,21 @@ public class StudentDashboardController {
 
     private void handleApply(Internship internship) {
         statusLabel.setText("Applying to: " + internship.getTitle());
-        showSuccess("Application submitted successfully");
+        
+        // Create application via API
+        apiService.applyForInternship(currentStudentId, internship.getId(), "I am very interested in this position.")
+                .whenComplete((result, ex) -> Platform.runLater(() -> {
+                    if (ex == null) {
+                        showSuccess("Application submitted successfully!");
+                        loadApplications(); // Reload applications
+                        loadStats(); // Update stats
+                    } else {
+                        showError("Failed to submit application: " + ex.getMessage());
+                    }
+                }));
     }
 
-    private void handleWithdraw(Object application) {
+    private void handleWithdraw(com.internship.client.model.Application application) {
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Confirm Withdrawal");
         confirmDialog.setHeaderText("Withdraw Application");
@@ -278,11 +333,11 @@ public class StudentDashboardController {
         });
     }
 
-    private void handleSubmitTask(Internship task) {
+    private void handleSubmitTask(com.internship.client.model.Task task) {
         statusLabel.setText("Submitting task: " + task.getTitle());
     }
 
-    private void handleViewTask(Internship task) {
+    private void handleViewTask(com.internship.client.model.Task task) {
         statusLabel.setText("Viewing task: " + task.getTitle());
     }
 
