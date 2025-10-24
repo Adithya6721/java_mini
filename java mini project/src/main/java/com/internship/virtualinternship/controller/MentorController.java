@@ -28,12 +28,13 @@ public class MentorController {
     }
 
     @PostMapping("/internships/{id}/tasks")
-    public ResponseEntity<?> createTask(@PathVariable("id") Long internshipId, @Valid @RequestBody TaskRequestDto dto) {
+    public ResponseEntity<?> createTask(@PathVariable("id") Long internshipId, @RequestParam("mentorId") Long mentorId, @Valid @RequestBody TaskRequestDto dto) {
         try {
-            Task task = taskService.create(dto, internshipId);
+            Task task = taskService.create(dto, internshipId, mentorId);
             TaskResponseDto response = convertToResponseDto(task);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ResourceNotFoundException("Task creation failed: " + e.getMessage());
         }
     }

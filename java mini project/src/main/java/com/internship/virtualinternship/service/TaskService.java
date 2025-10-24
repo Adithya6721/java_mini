@@ -3,8 +3,10 @@ package com.internship.virtualinternship.service;
 import com.internship.virtualinternship.controller.dto.TaskRequestDto;
 import com.internship.virtualinternship.model.Internship;
 import com.internship.virtualinternship.model.Task;
+import com.internship.virtualinternship.model.User;
 import com.internship.virtualinternship.repository.InternshipRepository;
 import com.internship.virtualinternship.repository.TaskRepository;
+import com.internship.virtualinternship.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -17,21 +19,27 @@ import java.util.stream.Collectors;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final InternshipRepository internshipRepository;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository, InternshipRepository internshipRepository) {
+    public TaskService(TaskRepository taskRepository, InternshipRepository internshipRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.internshipRepository = internshipRepository;
+        this.userRepository = userRepository;
     }
 
-    public Task create(TaskRequestDto dto, Long internshipId) {
+    public Task create(TaskRequestDto dto, Long internshipId, Long mentorId) {
         Internship internship = internshipRepository.findById(internshipId)
                 .orElseThrow(() -> new RuntimeException("Internship not found"));
+        
+        User mentor = userRepository.findById(mentorId)
+                .orElseThrow(() -> new RuntimeException("Mentor not found"));
         
         Task task = new Task();
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
         task.setDueDate(Date.from(dto.getDueDate().atStartOfDay(ZoneId.systemDefault()).toInstant()));
         task.setInternship(internship);
+        task.setMentor(mentor);
         
         return taskRepository.save(task);
     }

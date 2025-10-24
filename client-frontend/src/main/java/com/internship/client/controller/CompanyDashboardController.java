@@ -37,12 +37,12 @@ public class CompanyDashboardController {
     @FXML private TableColumn<Internship, Void> actionsCol;
     
     // Applications Table
-    @FXML private TableView<Object> applicationsTable;
-    @FXML private TableColumn<Object, String> studentCol;
-    @FXML private TableColumn<Object, String> internshipCol;
-    @FXML private TableColumn<Object, String> appStatusCol;
-    @FXML private TableColumn<Object, LocalDate> appDateCol;
-    @FXML private TableColumn<Object, Void> appActionsCol;
+    @FXML private TableView<com.internship.client.model.Application> applicationsTable;
+    @FXML private TableColumn<com.internship.client.model.Application, String> studentCol;
+    @FXML private TableColumn<com.internship.client.model.Application, String> internshipCol;
+    @FXML private TableColumn<com.internship.client.model.Application, String> appStatusCol;
+    @FXML private TableColumn<com.internship.client.model.Application, LocalDate> appDateCol;
+    @FXML private TableColumn<com.internship.client.model.Application, Void> appActionsCol;
     
     // Form Fields
     @FXML private TextField titleField;
@@ -71,7 +71,7 @@ public class CompanyDashboardController {
     @FXML private ProgressIndicator loadingIndicator;
 
     private final ObservableList<Internship> internshipsData = FXCollections.observableArrayList();
-    private final ObservableList<Object> applicationsData = FXCollections.observableArrayList();
+    private final ObservableList<com.internship.client.model.Application> applicationsData = FXCollections.observableArrayList();
     private final ApiService apiService = AppContext.api();
 
     @FXML
@@ -121,16 +121,16 @@ public class CompanyDashboardController {
         internshipsTable.setItems(internshipsData);
         
         // Applications table columns
-        studentCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Student Name"));
-        internshipCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Internship Title"));
-        appStatusCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty("Status"));
-        appDateCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(LocalDate.now()));
+        studentCol.setCellValueFactory(new PropertyValueFactory<>("studentName"));
+        internshipCol.setCellValueFactory(new PropertyValueFactory<>("internshipTitle"));
+        appStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+        appDateCol.setCellValueFactory(new PropertyValueFactory<>("applicationDate"));
         
         // Application actions column
-        appActionsCol.setCellFactory(new Callback<TableColumn<Object, Void>, TableCell<Object, Void>>() {
+        appActionsCol.setCellFactory(new Callback<TableColumn<com.internship.client.model.Application, Void>, TableCell<com.internship.client.model.Application, Void>>() {
             @Override
-            public TableCell<Object, Void> call(TableColumn<Object, Void> param) {
-                return new TableCell<Object, Void>() {
+            public TableCell<com.internship.client.model.Application, Void> call(TableColumn<com.internship.client.model.Application, Void> param) {
+                return new TableCell<com.internship.client.model.Application, Void>() {
                     private final Button reviewBtn = new Button("Review");
                     
                     {
@@ -179,14 +179,14 @@ public class CompanyDashboardController {
                 return apiService.getCompanyInternships().join();
             }
         };
-        task.setOnSucceeded(_ -> {
+        task.setOnSucceeded(event -> {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             internshipsData.clear();
             internshipsData.addAll(task.getValue());
             if (statusLabel != null) statusLabel.setText("Internships loaded");
         });
-        task.setOnFailed(_ -> {
+        task.setOnFailed(event -> {
             if (loadingIndicator != null) loadingIndicator.setVisible(false);
             if (refreshBtn != null) refreshBtn.setDisable(false);
             Throwable ex = task.getException();
@@ -198,7 +198,22 @@ public class CompanyDashboardController {
     
     private void loadApplications() {
         applicationsData.clear();
-        // TODO: Load applications from API
+        // Load applications for all company internships
+        if (!internshipsData.isEmpty()) {
+            // Load applications for first internship as demo
+            Internship firstInternship = internshipsData.get(0);
+            apiService.getCompanyApplications(firstInternship.getId())
+                    .whenComplete((applications, ex) -> Platform.runLater(() -> {
+                        if (ex == null) {
+                            applicationsData.clear();
+                            applicationsData.addAll(applications);
+                            if (statusLabel != null) statusLabel.setText("Applications loaded: " + applications.size());
+                        } else {
+                            ex.printStackTrace();
+                            System.err.println("Failed to load applications: " + ex.getMessage());
+                        }
+                    }));
+        }
     }
     
     private void setupEventHandlers() {
@@ -299,8 +314,8 @@ public class CompanyDashboardController {
         });
     }
     
-    private void handleReviewApplication(Object application) {
-        statusLabel.setText("Reviewing application");
+    private void handleReviewApplication(com.internship.client.model.Application application) {
+        statusLabel.setText("Reviewing application from: " + application.getStudentName());
         // TODO: Open review dialog
     }
     

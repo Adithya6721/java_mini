@@ -28,26 +28,29 @@ public class StudentController {
     }
 
     // Get all available internships
-    /*@GetMapping("/internships")
-    public ResponseEntity<List<Internship>> getAllInternships() {
+    @GetMapping("/internships/available")
+    public ResponseEntity<List<com.internship.virtualinternship.controller.dto.InternshipResponseDto>> getAllInternships() {
         try {
-            List<Internship> internships = internshipService.findAll(); // Make sure InternshipService has findAll()
+            List<com.internship.virtualinternship.controller.dto.InternshipResponseDto> internships = internshipService.findAll();
             return ResponseEntity.ok(internships);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
-    }*/
+    }
 
     // Get internship by id
-    /*@GetMapping("/internships/{id}")
-    public ResponseEntity<Internship> getInternshipById(@PathVariable Long id) {
+    @GetMapping("/internships/{id}")
+    public ResponseEntity<com.internship.virtualinternship.controller.dto.InternshipResponseDto> getInternshipById(@PathVariable Long id) {
         try {
-            Internship internship = internshipService.findById(id); // Make sure InternshipService has findById()
+            com.internship.virtualinternship.controller.dto.InternshipResponseDto internship = internshipService.findById(id);
             return ResponseEntity.ok(internship);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.notFound().build();
         }
-    }*/
+    }
+
     // Apply for an internship
     @PostMapping("/applications")
     public ResponseEntity<Application> applyForInternship(
@@ -65,11 +68,15 @@ public class StudentController {
     // Get student's applications
     // FIXED: Changed URL to /applications/my to avoid conflict
     @GetMapping("/applications/my") 
-    public ResponseEntity<List<Application>> getMyApplications(@RequestParam Long studentId) {
+    public ResponseEntity<List<com.internship.virtualinternship.controller.dto.ApplicationResponseDto>> getMyApplications(@RequestParam Long studentId) {
         try {
             List<Application> applications = applicationService.findByStudent(studentId);
-            return ResponseEntity.ok(applications);
+            List<com.internship.virtualinternship.controller.dto.ApplicationResponseDto> response = applications.stream()
+                    .map(this::convertToApplicationResponseDto)
+                    .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -123,5 +130,43 @@ public class StudentController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    // Get tasks for a specific internship
+    @GetMapping("/internships/{id}/tasks")
+    public ResponseEntity<List<com.internship.virtualinternship.controller.dto.TaskResponseDto>> getTasksForInternship(@PathVariable Long id) {
+        try {
+            List<Task> tasks = taskService.findByInternship(id);
+            List<com.internship.virtualinternship.controller.dto.TaskResponseDto> response = tasks.stream()
+                    .map(this::convertToTaskResponseDto)
+                    .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    private com.internship.virtualinternship.controller.dto.TaskResponseDto convertToTaskResponseDto(Task task) {
+        com.internship.virtualinternship.controller.dto.TaskResponseDto dto = new com.internship.virtualinternship.controller.dto.TaskResponseDto();
+        dto.setId(task.getId());
+        dto.setTitle(task.getTitle());
+        dto.setDescription(task.getDescription());
+        dto.setDueDate(new java.sql.Date(task.getDueDate().getTime()).toLocalDate());
+        dto.setInternshipTitle(task.getInternship().getTitle());
+        dto.setInternshipId(task.getInternship().getId());
+        return dto;
+    }
+    
+    private com.internship.virtualinternship.controller.dto.ApplicationResponseDto convertToApplicationResponseDto(Application application) {
+        com.internship.virtualinternship.controller.dto.ApplicationResponseDto dto = new com.internship.virtualinternship.controller.dto.ApplicationResponseDto();
+        dto.setId(application.getId());
+        dto.setStudentName(application.getStudent().getUsername());
+        dto.setInternshipTitle(application.getInternship().getTitle());
+        dto.setStatus(application.getStatus().toString());
+        dto.setApplicationDate(new java.sql.Date(application.getAppliedDate().getTime()).toLocalDate());
+        dto.setCoverLetter(application.getCoverLetter());
+        dto.setResumeUrl(application.getResumeUrl());
+        return dto;
     }
 }
